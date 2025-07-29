@@ -1,0 +1,58 @@
+import {Component, OnInit} from '@angular/core';
+import {AuthService} from "../service/auth.service";
+import {TokenService} from "../service/token.service";
+import {ActivatedRoute, Router} from "@angular/router";
+import {NgxSpinnerService} from "ngx-spinner";
+import {CookieService} from "ngx-cookie-service";
+import {MessageService} from "primeng/api";
+import {UserService} from "../service/user.service";
+
+@Component({
+  selector: 'app-detail-my-course',
+  templateUrl: './detail-my-course.component.html',
+  styleUrls: ['./detail-my-course.component.scss']
+})
+export class DetailMyCourseComponent implements OnInit{
+  idUser: any;
+  currentRole: any;
+  currentIDUser: any;
+  request: any = {};
+  user: any = {};
+  selectedTab: any = 'infors';
+
+  constructor(public authService: AuthService,
+              private tokenService: TokenService,
+              private route: ActivatedRoute,
+              private router: Router,
+              private spinner: NgxSpinnerService,
+              private cookieService: CookieService,
+              private messageService: MessageService,
+              private userService: UserService) {
+  }
+
+  ngOnInit(): void {
+    this.currentRole = this.tokenService.getRoleFromToken();
+    this.getProfile()
+  }
+
+  getProfile() {
+    this.userService.getProfile().subscribe(res => {
+      if (res != null) {
+        this.user = res
+      }
+    })
+  }
+
+  selectTab(tabId: string) {
+    this.selectedTab = tabId;
+  }
+
+  logout(): void {
+    this.authService.logout().subscribe(() => {
+      this.cookieService.delete('accessToken', '/');
+      this.router.navigate(['/dang-nhap'])
+    })
+  }
+
+  protected readonly onabort = onabort;
+}

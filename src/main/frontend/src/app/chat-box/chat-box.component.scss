@@ -1,0 +1,48 @@
+/* Desktop - giữ 7 cột */
+.date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+/* Ẩn dòng thứ khi mobile */
+.days-header {
+  display: grid;
+  text-align: center;
+  color: #72c3ad;
+  font-weight: bold;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+@media (max-width: 767px) {
+  .date-grid {
+    grid-template-columns: repeat(3, 1fr); /* hoặc 4 nếu bạn muốn */
+  }
+
+  .days-header {
+    display: none;
+  }
+
+  .day-of-week {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+}
+
+/* Cơ bản */
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 90px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.date-cell.empty {
+  background: transparent;
+  border: none;
+}

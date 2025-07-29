@@ -1,0 +1,36 @@
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<p-toast></p-toast>
+<div class="">
+  <div class="row">
+    <div class="col-md-12">
+      <div >
+        <!-- begin profile -->
+        <div class="profile">
+          <div class="profile-header">
+            <div>
+              <ul class="profile-header-tab nav nav-tabs decor-text">
+              </ul>
+              <ul class="profile-header-tab nav nav-tabs decor-text" *ngIf="currentRole != 'ROLE_SHIPPER' && this.currentRole != 'ROLE_ADMIN'" style="cursor: pointer">
+                <li class="nav-item">
+                  <a routerLink="noi-dung" [ngClass]="{ active: selectedTab === 'infors' }" (click)="selectTab('infors')" routerLinkActive="active" class="nav-link_">
+                    Nội dung
+                  </a></li>
+                <li class="nav-item">
+                  <a routerLink="giang-vien" [ngClass]="{ active: selectedTab === 'actions' }" (click)="selectTab('actions')" routerLinkActive="active" class="nav-link_">
+                    Giảng viên
+                  </a></li>
+                <li class="nav-item">
+                  <a routerLink="danh-sach-hoc-vien" [ngClass]="{ active: selectedTab === 'settings' }" (click)="selectTab('settings')" routerLinkActive="active" class="nav-link_">
+                    Danh sách học viên
+                  </a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<router-outlet></router-outlet>

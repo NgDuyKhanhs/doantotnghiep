@@ -1,0 +1,107 @@
+<section class="intro" style="background-color: #f5f7fa;">
+  <div class="bg-image h-100" >
+    <div class="mask d-flex h-100">
+      <div class="container">
+        <div class="row">
+          <h5 style="text-align: center; padding: 10px 0">CHƯƠNG TRÌNH HỌC</h5>
+<!--          <div class="col-12">-->
+<!--            <div class="row mb-3">-->
+<!--              <div class="col-md-3">-->
+<!--                <label for="filterSoTin" class="form-label">Tên học phần</label>-->
+<!--                <input-->
+<!--                  type="text"-->
+<!--                  class="custom-control-input"-->
+<!--                />-->
+<!--              </div>-->
+
+<!--              <div class="col-md-3">-->
+<!--                <label for="filterSoTin" class="form-label">Số tín</label>-->
+<!--                <select id="filterSoTin" class="form-select">-->
+<!--                  <option value="">&#45;&#45; Tất cả &#45;&#45;</option>-->
+<!--                  <option value="2">2 tín</option>-->
+<!--                  <option value="3">3 tín</option>-->
+<!--                  <option value="4">4 tín</option>-->
+<!--                </select>-->
+<!--              </div>-->
+
+
+<!--            </div>-->
+<!--          </div>-->
+          <div class="col-12">
+            <div style="margin: 10px 0">
+              <button class="btn btn-primary rounded-1" style="font-size: 12px"><i class="bi bi-plus" ></i> Thêm học phần</button>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <div class="table-responsive table-scroll tb1" data-mdb-perfect-scrollbar="true" style="position: relative;">
+                  <table class="table table-bordered mb-0">
+                    <thead style="background-color: #002d72;">
+                    <tr>
+<!--                      <th scope="col" style="width: 5%;"></th>-->
+                      <th scope="col" style="width: 40%; text-align: left;padding-left: 40px">Tên học phần</th>
+                      <th scope="col" style="width: 5%">Số tín</th>
+                      <th scope="col" style="width: 5%" *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let i of dataShow; let j = index">
+<!--                      <td class="text-center">-->
+<!--                        <div class="custom-control custom-checkbox">-->
+<!--                          <input-->
+<!--                            type="checkbox"-->
+<!--                            class="custom-control-input noSetDisable"-->
+<!--                            name="{{'checkbox' + j}}"-->
+<!--                            id="{{ 'checkbox'+ j}}"-->
+<!--                            [tabindex]="123459 + 2 + j"-->
+<!--                          />-->
+<!--                          <label class="custom-control-label" for="{{'checkbox'+ j}}"></label>-->
+<!--                        </div>-->
+<!--                      </td>-->
+                      <td style="text-align: left;padding-left: 40px">{{ i.name }}</td>
+                      <td>{{ i.credits }}</td>
+                      <td  *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'" style="display: flex; justify-content: center; align-items: center">
+                        <i class="bi bi-pencil-square" style="margin-right: 15px; cursor: pointer; color: #2bb6a3"></i>
+                        <i class="bi bi-trash3" style="cursor: pointer;color: #a75d54"></i>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                  <div class="footer-dynamic-report">
+                    <div style="padding-right: 16px; margin-top:15px;height: 60px">
+                      <div class="row d-flex" style="height: 20px;width: 100%;justify-self: end">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-9 col-form-label" style="font-size: 10px"
+                            ><span></span>Tổng số: {{ courses.length }}
+                            </label>
+
+                          </div>
+
+                        </div>
+                        <div class="col-md-6">
+                          <div class="row  pagination-container" style="justify-self: end">
+                            <ngb-pagination
+                              class="ngb-pagination"
+                              [size]="'sm'"
+                              [collectionSize]="courses.length"
+                              [(page)]="page"
+                              [pageSize]="itemsPerPage"
+                              [maxSize]="5"
+                              [rotate]="true"
+                              [boundaryLinks]="true"
+                              (pageChange)="loadPage(page)"
+                            ></ngb-pagination>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

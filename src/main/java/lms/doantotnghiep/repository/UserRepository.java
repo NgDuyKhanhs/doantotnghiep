@@ -1,0 +1,35 @@
+package lms.doantotnghiep.repository;
+
+
+import lms.doantotnghiep.domain.User;
+import lms.doantotnghiep.dto.UserDTO;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+
+import java.util.List;
+import java.util.Optional;
+
+@SuppressWarnings("unused")
+@Repository
+public interface UserRepository extends CrudRepository<User, Integer> {
+    @Query(value = "SELECT * FROM usertbl WHERE email =  ?1 and active = 1", nativeQuery = true)
+    Optional<User> findByEmail(String studentCode);
+
+    @Query(value = "SELECT * FROM usertbl WHERE email =  ?1", nativeQuery = true)
+    List<User> findAllByEmail(String studentCode);
+
+    @Query(value = "SELECT * FROM usertbl WHERE email =  ?1", nativeQuery = true)
+    Optional<User> findByEmailSigned(String email);
+
+    @Query(value = "select u.email, u.fullname from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3", nativeQuery = true)
+    List<UserDTO> getListTeachers();
+
+    @Query(value = "select u.email, u.fullname from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3 and user_id = ?1", nativeQuery = true)
+    UserDTO getTeacherByID(Integer id);
+
+
+
+}

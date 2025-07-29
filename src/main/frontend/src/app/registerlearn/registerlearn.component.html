@@ -1,0 +1,82 @@
+<p-toast></p-toast>
+<section class="intro" style="background-color: #f5f7fa;" *ngIf="!isCreateRoute">
+  <div class="bg-image h-100">
+    <div class="mask d-flex align-items-center h-100">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12" *ngIf="token.getRoleFromToken() == 'ROLE_USER'">
+            <div class="row mb-3" style="padding-top: 70px">
+              <div class="col-md-3">
+                <label for="filterTenHocPhan" class="form-label">Lựa chọn học phần</label>
+                <select id="filterTenHocPhan" class="form-select" [(ngModel)]="type" (change)="getDataSearch()">
+                  <option value="Chưa đăng ký">-- Chưa đăng ký --</option>
+                  <option value = "Đã đăng ký">Đã đăng ký</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div style="margin: 10px 0; padding-top: 25px">
+              <button routerLink = "them-moi" routerLinkActive="active"  class="btn btn-primary rounded-1" style="font-size: 12px"><i class="bi bi-plus" ></i> Thêm học phần</button>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <div class="table-responsive table-scroll" data-mdb-perfect-scrollbar="true" style="position: relative; height: 700px">
+                  <table class="table table-bordered mb-0">
+                    <thead style="background-color: #002d72;">
+                    <tr>
+                      <th scope="col" style="width: 5%;" *ngIf="type == 'Chưa đăng ký' && token.getRoleFromToken() == 'ROLE_USER'"></th>
+                      <th scope="col" style="width: 40%; text-align: left">Tên học phần</th>
+                      <th scope="col" style="width: 20%;">Thời gian học</th>
+                      <th scope="col" style="width: 5%">Số tín</th>
+                      <th scope="col" style="width: 5%">Sĩ số</th>
+                      <th scope="col" style="width: 5%">Đã đăng ký</th>
+                      <th *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'" scope="col">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let e of enrollments">
+                      <td class="text-center" *ngIf="type == 'Chưa đăng ký' && token.getRoleFromToken() == 'ROLE_USER'">
+                        <div class="custom-control custom-checkbox">
+                          <input
+                            type="checkbox"
+                            class="custom-control-input noSetDisable"
+                            [(ngModel)]="e.selected"
+                            (change)="onCheckboxChange()"
+                            [id]="'checkbox-' + e.id"
+                          />
+                          <label class="custom-control-label" [for]="'checkbox-' + e.id"></label>
+
+                        </div>
+                      </td>
+                      <td style="text-align: left">{{e.course.name}}</td>
+                      <td>{{e.startTime | date: 'dd/MM/yyyy'}} - {{e.endTime | date: 'dd/MM/yyyy'}}</td>
+                      <td>{{e.course.credits}}</td>
+                      <td>{{e.available}}</td>
+                      <td>{{e.registered}}</td>
+                      <td  *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'" style="display: flex; justify-content: center; align-items: center;">
+                        <i class="bi bi-pencil-square" style="margin-right: 15px; cursor: pointer; color: #2bb6a3"></i>
+                        <i class="bi bi-trash3" style="cursor: pointer;color: #a75d54"></i>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                  <div style="float: right; margin-right: 10px; cursor: pointer">
+                    <button *ngIf="type == 'Chưa đăng ký' && token.getRoleFromToken() == 'ROLE_USER'"
+                      class="btn btn-success mt-2 rounded-0"
+                      [disabled]="!isAnySelected"
+                      (click)="registerSelectedCourses()"
+                    >
+                      Đăng ký
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<router-outlet></router-outlet>

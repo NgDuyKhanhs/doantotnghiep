@@ -1,0 +1,34 @@
+[
+  {
+    "keywords": [
+      "xin chào",
+      "chào",
+      "hello",
+      "hi",
+      "alo"
+    ],
+    "response": "Chào bạn! Tôi có thể giúp gì cho bạn?"
+  },
+  {
+    "keywords": [
+      "bạn là ai",
+      "mày là ai",
+      "ai đây",
+      "cậu là ai",
+      "ông là ai",
+      "bà là ai"
+    ],
+    "response": "Tôi là bot hỗ trợ. Hỏi tôi bất kỳ điều gì!"
+  },
+  {
+    "keywords": [
+      "menu",
+      "đặt đồ",
+      "đặt món",
+      "order đồ",
+      "món gì",
+      "món nào"
+    ],
+    "response": "https://ksetup.net/wp-content/uploads/2023/09/menu-an-vat.jpeg"
+  }
+]

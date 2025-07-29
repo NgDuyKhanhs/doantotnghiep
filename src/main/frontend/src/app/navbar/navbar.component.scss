@@ -1,0 +1,374 @@
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+
+$font-primary: 'Comfortaa Light',Arial, sans-serif;
+$primary: rgba(178, 72, 72, 0.86);
+
+body{
+  font-family: $font-primary;
+  font-size: 14px;
+  line-height: 1.8;
+  font-weight: normal;
+  background: #fafafa;
+  color: lighten($black,50%);
+  z-index: 999
+}
+a {
+  transition: .3s all ease;
+  color: $primary;
+  &:hover, &:focus {
+    text-decoration: none !important;
+    outline: none !important;
+    box-shadow: none;
+  }
+}
+a {
+  text-decoration: none;
+}
+button {
+  transition: .3s all ease;
+  &:hover, &:focus {
+    text-decoration: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+h1, h2, h3, h4, h5,
+.h1, .h2, .h3, .h4, .h5 {
+  line-height: 1.5;
+  font-weight: 400;
+  font-family: $font-primary;
+  color: $black;
+}
+
+
+.ftco-section{
+  padding: 7em 0;
+}
+
+.ftco-no-pt{
+  padding-top: 0;
+}
+.ftco-no-pb{
+  padding-bottom: 0;
+}
+//HEADING SECTION
+.heading-section{
+  font-size: 28px;
+  color: $black;
+  small{
+    font-size: 18px;
+  }
+}
+
+//COVER BG
+.img{
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+
+
+.navbar {
+  padding: 15px 10px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  margin-bottom: 40px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-btn {
+  box-shadow: none;
+  outline: none !important;
+  border: none;
+}
+
+//SIDEBAR
+.wrapper {
+  height: 100vh
+}
+
+#sidebar {
+  min-width: 250px;
+  background: $primary;
+  color: #fff;
+  transition: all 0.3s;
+  position: relative;
+  .h6{
+    color: $white;
+  }
+  &.active{
+    margin-left: -250px;
+    .custom-menu{
+      margin-right: -50px;
+    }
+  }
+  h1{
+    margin-bottom: 20px;
+    font-weight: 700;
+    .logo{
+      color: $white;
+    }
+  }
+  ul.components{
+    padding: 0;
+  }
+  ul{
+    li{
+      font-size: 16px;
+      padding: 10px 0;
+      >ul{
+        margin-left: 10px;
+        li{
+          font-size: 14px;
+        }
+      }
+      a{
+        padding: 10px 0;
+        display: block;
+        color: rgba(255,255,255,.8);
+        border-bottom: 1px solid rgba(255,255,255,.1);
+        &:hover{
+          color: $white;
+        }
+      }
+      &.active{
+        > a{
+          background: transparent;
+          color: $white;
+        }
+      }
+    }
+  }
+  @include media-breakpoint-down(md){
+    margin-left: -250px;
+    &.active {
+      margin-left: 0;
+    }
+    .custom-menu{
+      margin-right: -50px !important;
+      top: 10px !important;
+    }
+  }
+
+  .custom-menu{
+    display: inline-block;
+    position: absolute;
+    top: 20px;
+    right: 0;
+    margin-right: -20px;
+    @include transition(.3s);
+    .btn{
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      &.btn-primary{
+        background: darken($primary,10%);
+        border-color: darken($primary,10%);
+        &:hover, &:focus{
+          background: darken($primary,10%) !important;
+          border-color: darken($primary,10%) !important;
+        }
+      }
+    }
+  }
+}
+
+
+a[data-toggle="collapse"] {
+  position: relative;
+}
+
+.dropdown-toggle::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+#sidebarCollapse{
+  span{
+    @include media-breakpoint-down(md){
+      display: none;
+    }
+  }
+}
+
+#content {
+  padding: 0;
+  min-height: 100vh;
+  transition: all 0.3s;
+}
+
+
+.btn{
+  &.btn-primary{
+    background: $primary;
+    border-color: $primary;
+    margin-top: 3px;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    &:hover, &:focus{
+      background: $primary !important;
+      border-color: $primary !important;
+    }
+  }
+}
+
+.footer{
+  p{
+    color: rgba(255,255,255,.5);
+  }
+}
+
+
+
+.form-control {
+  height: 40px!important;
+  background: $white;
+  color: $black;
+  font-size: 13px;
+  border-radius: 4px;
+  box-shadow: none !important;
+  border: transparent;
+  &:focus, &:active {
+    border-color: $black;
+  }
+  &::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: rgba(0,0,0,.3);
+  }
+  &::-moz-placeholder { /* Firefox 19+ */
+    color: rgba(0,0,0,.3);
+  }
+  &:-ms-input-placeholder { /* IE 0+ */
+    color: rgba(0,0,0,.3);
+  }
+  &:-moz-placeholder { /* Firefox 18- */
+    color: rgba(0,0,0,.3);
+  }
+}
+* {
+  box-sizing: border-box;
+}
+
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  padding: 1rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  margin-bottom: 1rem;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #333;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background-color: #e3f2fd;
+  color: #007bff;
+}
+
+.sidebar .icon {
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+}
+
+/* Main content */
+.main-content {
+  padding: 1.5rem;
+  padding-top: 0;
+  background-color: #fdfdfd;
+  width: 100%
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+
+//.card {
+//  background-color: #ffffff;
+//  padding: 1rem;
+//  border-radius: 12px;
+//  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+//}
+
+.calendar-box {
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.calendar {
+  padding: 0;
+  margin: 10px 0;
+  margin-top: 40px
+}
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-wrapper .dropdown-toggle {
+  position: relative;
+  z-index: 2;
+}
+
+.dropdown-wrapper .dropdown-list {
+  position: relative;
+  margin-left: 20px; /* đẩy menu con ra bên phải để thấy rõ line */
+  padding-left: 10px;
+  border-left: 1px solid transparent; /* khởi tạo, sẽ chuyển màu khi mở */
+}
+
+.dropdown-wrapper .dropdown-list.d-block {
+  border-left: 1px solid #999; /* hiện line khi mở */
+}
+
+.dropdown-wrapper .dropdown-list::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -1px;
+  width: 1px;
+  height: 0px;
+  background-color: #999; /* màu line giữa a và ul */
+  display: none;
+}
+
+.dropdown-wrapper .dropdown-list.d-block::before {
+  display: block;
+}

@@ -1,0 +1,36 @@
+.header {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+}
+.profile {
+  margin-left: 20px;
+  font-size: 25px;
+  //color: rgba(228, 43, 43, 0.95);
+}
+.active {
+  color: rgba(228, 43, 43, 0.95);
+}
+.layout-container {
+  display: flex;
+  height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.navbar {
+  transition: width 0.3s ease;
+  overflow: hidden;
+  background-color: #f5f7fa;
+}
+
+.sidebar-open .navbar {
+  width: 250px;
+}
+
+.sidebar-closed .navbar {
+  width: 60px; /* hoặc 0 nếu muốn ẩn hoàn toàn */
+}
+
+.content {
+  flex: 1;
+  transition: margin 0.3s ease;
+  background-color: #f5f7fa;
+}

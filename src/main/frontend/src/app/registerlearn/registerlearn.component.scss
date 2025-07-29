@@ -1,0 +1,35 @@
+html,
+body,
+.intro {
+  height: 100%;
+  width: 100%
+}
+
+table td,
+table th {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+}
+
+thead th {
+  color: #000000;
+  text-align: center;
+}
+
+.card {
+  border-radius: .5rem;
+}
+
+.table-scroll {
+  border-radius: .5rem;
+}
+
+.table-scroll table thead th {
+  font-size: 14px;
+}
+thead {
+  top: 0;
+  position: sticky;
+}

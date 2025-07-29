@@ -1,0 +1,60 @@
+urlClient: http://localhost:4200
+urlServer: http://localhost:8080
+urlDefaultAvt : https://static.vecteezy.com/system/resources/previews/019/896/008/original/male-user-avatar-icon-in-flat-design-style-person-signs-illustration-png.png
+recaptcha:
+  verify-url: https://www.google.com/recaptcha/api/siteverify
+  secret-key: 6LfSCS8qAAAAANeOWUAucnmphneM9MHTMbPIrGcr
+  site-key: 6LfSCS8qAAAAAK8-G5UNElCtksrCCvAK10Vh-SWb
+
+#  client captcha key : 6LfSCS8qAAAAAK8-G5UNElCtksrCCvAK10Vh-SWb
+#jwt:
+#  # Access token
+#  valid-duration: 400000 # Thời gian hiệu lực của Access Token (tính bằng giây)
+#  accessKey: 517264d32494bb4ea58285e92954e010595800e80a5f9c45fd48f762cbbf16de
+#
+#  # Refresh token
+#  refreshable-duration: 400000
+#  refreshKey: d145e5cd2265b82f2118672125dff2f4a1321d5bf0c3f8a90c74c85833c36b68
+#
+#  # Reset password token
+#  reset-password-duration: 400000
+#  resetKey: d145e5cd2265b82f2118672125dff2f4a1321d5bf0c3f8a90c74c85833c36b68
+#  eba8aa44a64cec36cdd9b94a5f0073736bed7340144aa676e16b6a296413a5e638803f576556d662b72f2e732f870ab4359a050a087d31f0516efffe211de4e6
+#  # Active user token
+#  active-user-duration: 400000
+#  activeKey: d145e5cd2265b82f2118672125dff2f4a1321d5bf0c3f8a90c74c85833c36b68
+#
+jwt:
+  # Access token
+  valid-duration: 900 # Khoảng 15p
+  accessKey: eba8aa44a64cec36cdd9b94a5f0073736bed7340144aa676e16b6a296413a5e638803f576556d662b72f2e732f870ab4359a050a087d31f0516efffe211de4e6
+
+  # Refresh token
+  refreshable-duration: 604800 # 7 ngày
+  refreshKey: 9b3c2eab0e41ac67db99ed27117586d24419bbdda33321b6792dcc295cfe20bcb426be622f7aed2fb0cdf7992aa222dd9051bbb9426676243a4467556e74f6dc
+
+  # Reset password token
+  reset-password-duration: 400000
+  resetKey: 5fdc5cf06bfcd73fe2540f228283cfafb56ed00ded29dac3de4a350c29717b82c4055660c36a0f9511acf43f78eda0302439813136cd52776ec875d1c7f3182e
+  # Active user token
+  active-user-duration: 400000
+  activeKey: a3f21633fa82c60e2c70821c8dc38d568e9a2dc898a0721e72da5c1320ab7f72fba7188876920a5cbc60a960482acabe1760bb1bcfa541728ce265806ffe0f39
+
+
+payment:
+  vnpay:
+    #    tmn-code: SRIE0UKK
+    #    secret-key: YSUHAOQNTRVAVYYWKOCMBXJAEFLQQXSA
+    secret-key: YSUHAOQNTRVAVYYWKOCMBXJAEFLQQXSA
+    tmn-code: SRIE0UKK
+
+    init-payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+#    return-url: https://dev.roninhub.com/order/%s/status
+    return-url: http://localhost:4200/response-transaction
+    timeout: 15 # in minutes
+
+
+paypal:
+  client-id: AQRh76tofCg634fmMdi8OPYaoi071Ztc5AF0vhm_veIlBWvimaln1OhaHEy-Iotjbgqjt729429nZAmw
+  client-secret: EIAt-1JCfWCGIpMZru1BkZCWOLpukjQkI375pNnpjZv1qYap2bMLSUMpq2eDSaM4UXh6OR_9mqiIZgkO
+  mode: sandbox # Use #sandbox' for testing and 'live' for Production

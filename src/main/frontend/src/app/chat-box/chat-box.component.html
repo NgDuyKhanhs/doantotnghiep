@@ -1,0 +1,27 @@
+<div class="calendar" style="margin-top: 50px">
+<!--  <div class="calendar-header">-->
+<!--    <h3>JANUARY</h3>-->
+<!--    <div class="calendar-year">2024</div>-->
+<!--  </div>-->
+
+  <div class="calendar-body">
+    <!-- Dòng hiển thị thứ (chỉ hiện desktop) -->
+    <div class="calendar-grid days-header">
+      <div class="day-label" *ngFor="let day of daysOfWeek">{{ day }}</div>
+    </div>
+
+    <!-- Lưới ngày -->
+    <div class="calendar-grid date-grid">
+      <div
+        *ngFor="let day of getCalendarGrid(); let i = index"
+        class="date-cell"
+        [class.empty]="!day"
+      >
+        <ng-container *ngIf="day">
+          <div class="day-of-week" *ngIf="isMobile">{{ getDayOfWeekLabel(i) }}</div>
+          <div class="day-number">{{ day }}</div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

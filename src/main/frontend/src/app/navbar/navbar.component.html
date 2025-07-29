@@ -1,0 +1,98 @@
+<body>
+<div class="dashboard">
+  <div class="wrapper d-flex align-items-stretch">
+    <nav id="sidebar" [class.active]="!sidebarOpen">
+      <div class="custom-menu">
+        <button type="button" id="sidebarCollapse" class="btn btn-primary" (click)="toggleSidebarClicked()">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+      <div class="p-4 pt-5">
+        <ul class="list-unstyled components mb-5" *ngIf="token.getRoleFromToken() == 'ROLE_USER'">
+          <li class="active text">
+            <a routerLink="trang-chu" routerLinkActive="active">Trang chủ</a>
+          </li>
+          <li class="text">
+            <a>Lịch học</a>
+          </li>
+          <li>
+            <a (click)="toggleDropdown()" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav1" [attr.aria-expanded]="dropdownOpen">
+              Sinh viên
+            </a>
+            <ul class="list-unstyled" [ngClass]="{ 'd-block': dropdownOpen, 'd-none': !dropdownOpen }">
+              <li>
+                <a routerLink="chuong-trinh-hoc" routerLinkActive="active">Chương trình học</a>
+              </li>
+              <li>
+                <a routerLink="dang-ky-hoc" routerLinkActive="active">Đăng ký học</a>
+              </li>
+
+              <li class="text">
+                <a>Tra cứu điểm</a>
+              </li>
+            </ul>
+          </li>
+          <li class="text">
+            <a routerLink = "danh-sach-hoc-phan-hien-tai" routerLinkActive = "active">Học phần hiện tại</a>
+          </li>
+          <li class="text">
+            <a>Thanh toán</a>
+          </li>
+        </ul>
+
+        <ul class="list-unstyled components mb-5" *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'">
+          <li class="active text">
+            <a routerLink="trang-chu" routerLinkActive="active">Trang chủ</a>
+          </li>
+
+          <li class="dropdown-wrapper">
+            <a (click)="toggleDropdown()"
+               data-toggle="collapse"
+               aria-expanded="false"
+               class="dropdown-toggle nav1"
+               [attr.aria-expanded]="dropdownOpen">
+              Quản lý sinh viên
+            </a>
+            <ul class="list-unstyled dropdown-list"
+                [ngClass]="{ 'd-block': dropdownOpen, 'd-none': !dropdownOpen }">
+              <li>
+                <a routerLink="chuong-trinh-hoc" routerLinkActive="active">Thông tin sinh viên</a>
+              </li>
+              <li>
+                <a routerLink="chuong-trinh-hoc" routerLinkActive="active">Học phần</a>
+              </li>
+              <li>
+                <a routerLink="dang-ky-hoc" routerLinkActive="active">Khóa học</a>
+              </li>
+            </ul>
+          </li>
+          <!-- HTML giữ nguyên -->
+          <li class="dropdown-wrapper">
+            <a (click)="toggleDropdown1()"
+               data-toggle="collapse"
+               aria-expanded="false"
+               class="dropdown-toggle nav1"
+               [attr.aria-expanded]="dropdownOpen1">
+              Quản lý giảng viên
+            </a>
+            <ul class="list-unstyled dropdown-list"
+                [ngClass]="{ 'd-block': dropdownOpen1, 'd-none': !dropdownOpen1 }">
+              <li>
+                <a routerLink="chuong-trinh-hoc" routerLinkActive="active">Danh sách giảng viên</a>
+              </li>
+              <li>
+                <a routerLink="dang-ky-hoc" routerLinkActive="active">Chuyên môn</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="text">
+            <a>Gửi thông báo</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+</div>
+</body>

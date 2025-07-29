@@ -1,0 +1,31 @@
+<header id="header" class="header d-flex align-items-center sticky-top">
+  <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+    <a class="logo d-flex align-items-center me-auto" style="text-decoration: none">
+      <h1 class="sitename">
+        <img src="https://cdn.haitrieu.com/wp-content/uploads/2021/10/Logo-Hoc-Vien-Ky-Thuat-Mat-Ma-ACTVN.png"/>
+      </h1>
+      <span class="text" style="margin-left: 10px">HỆ THỐNG HỌC TRỰC TUYẾN</span>
+    </a>
+
+    <nav id="navmenu" class="navmenu">
+      <ul>
+        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Trang chủ' }" (click)="selectTab('Trang chủ')" routerLink="trang-chu" routerLinkActive="active">Trang chủ</a></li>
+        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Thời khóa biểu' }" (click)="selectTab('Thời khóa biểu')" routerLink="thoi-khoa-bieu" routerLinkActive="active">Thời khóa biểu</a></li>
+      </ul>
+      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+    <a *ngIf="!authService.authenticated()" style="text-decoration: none" class="nav-link btn-getstarted" routerLink="dang-nhap" routerLinkActive="active">Đăng nhập</a>
+    <a *ngIf="authService.authenticated()" style="text-decoration: none" class="nav-link profile" [ngClass]="{ active: selectedTab === 'profile' }" (click)="selectTab('profile')" routerLink="thong-tin-ca-nhan" routerLinkActive="active"><i class="bi bi-person-circle"></i></a>
+  </div>
+</header>
+
+
+<div class="layout-container" [ngClass]="{ 'sidebar-open': sidebarOpen, 'sidebar-closed': !sidebarOpen }">
+  <app-navbar class="navbar" (toggleSidebar1)="toggleSidebar()"></app-navbar>
+
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+
