@@ -1,6 +1,7 @@
 package lms.doantotnghiep.service;
 
 import com.nimbusds.jose.JOSEException;
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.Class;
 
 import lms.doantotnghiep.dto.EnrollmentDTO;
@@ -18,7 +19,7 @@ import java.util.List;
 public interface UserService {
     void register(UserDTO userDTO);
     boolean activeAccount(String token);
-    ResponseLoginDTO login(UserDTO userDTO);
+    ResponseLoginDTO login(UserDTO userDTO,  HttpServletRequest request);
     TokenResponse refreshToken(String refreshToken) throws ParseException, JOSEException;
     UserDetailsImple getPrincipal(Authentication authentication);
 
@@ -26,5 +27,9 @@ public interface UserService {
     List<Class> getAllClasses();
     //Admin
     List<UserDTO> getAllTeachers();
-    void uploadEnrollment(UploadEnrollmentReq uploadEnrollmentReq);
+    void uploadEnrollment(EnrollmentDTO enrollmentDTO);
+    List<UserDTO> getAllStudents(String className);
+    UserDTO getTeacherByID(Integer id);
+
+    List<UserDTO> getListUserFromEnrollment(Integer enrollId);
 }

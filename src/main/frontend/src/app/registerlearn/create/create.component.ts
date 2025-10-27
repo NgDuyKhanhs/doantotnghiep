@@ -1,7 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {UserService} from "../../service/user.service";
 import {DomSanitizer} from "@angular/platform-browser";
-
+import {NotificationService} from "../../service/notification.service";
+import {Router} from "@angular/router";
+import { DatePipe } from '@angular/common';
 @Component({
   selector: 'app-create',
   templateUrl: './create.component.html',
@@ -11,25 +13,35 @@ export class CreateComponent implements OnInit {
   teachers: any = [];
   selectedTeacher: any = {};
   courses: any = []
-  selectedCourse: any= {};
+  selectedCourse: any = {};
   classes: any = []
   previewUrl: string | ArrayBuffer | null = null;
   imageFiles: File[] = [];
   imagePreviewUrls: any = [];
-  uploadEnrollmentReq: any = {};
-  constructor(private userService: UserService, private sanitizer: DomSanitizer,) {
+  enrollmentDTO: any = {};
+  fromDate: any;
+  toDate: any;
+  available: any = 0;
+  locked: any = true;
+  constructor(private userService: UserService,
+              private sanitizer: DomSanitizer,
+              private notify: NotificationService,
+              private router: Router,
+              private datePipe: DatePipe
+              ) {
   }
 
   ngOnInit(): void {
+    this.selectedCourse.user = {}
   }
 
-  getListTeacher() {
-    if (this.teachers.length == 0) {
-      this.userService.getAllTeachers().subscribe(res => {
-        this.teachers = res;
-      })
-    }
-  }
+  // getListTeacher() {
+  //   if (this.teachers.length == 0) {
+  //     this.userService.getAllTeachers().subscribe(res => {
+  //       this.teachers = res;
+  //     })
+  //   }
+  // }
 
   getListCourse() {
     if (this.courses.length == 0) {
@@ -39,33 +51,26 @@ export class CreateComponent implements OnInit {
     }
   }
 
-  private convertToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+  register() {
+    this.enrollmentDTO.available = this.available;
+    this.enrollmentDTO.lockWhenFull = this.locked;
+    this.enrollmentDTO.courseId = this.toDate;
+    this.enrollmentDTO.startTime = this.datePipe.transform(this.fromDate, 'yyyy-MM-dd HH:mm:ss');
+    this.enrollmentDTO.endTime = this.datePipe.transform(this.toDate, 'yyyy-MM-dd HH:mm:ss');
+    if (this.selectedCourse != null) {
+      this.enrollmentDTO.courseId = this.selectedCourse.courseId;
+    }
+
+    this.userService.uploadEnrollment(this.enrollmentDTO).subscribe({
+      next: (res) => {
+        this.notify.showSuccess(res.message);
+        setTimeout(()=> {
+          this.router.navigate(['dang-ky-hoc']);
+        },2000)
+      },
+      error: (err) => {
+        this.notify.showFail(err.message);
+      }
     });
   }
-
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-
-    if (file) {
-      this.imageFiles = [file];
-      const objectURL = URL.createObjectURL(file);
-      this.imagePreviewUrls = [
-        this.sanitizer.bypassSecurityTrustUrl(objectURL) as string
-      ];
-    }
-  }
-
-  // register() {
-  //   if(this.selectedCourse != null) {
-  //     this.uploadEnrollmentReq.courseDTO = this.selectedCourse;
-  //   }
-  //   this.userService.uploadEnrollment()
-  // }
 }

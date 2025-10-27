@@ -1,7 +1,11 @@
 package lms.doantotnghiep.service;
 
+import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
+import lms.doantotnghiep.dto.PdfDTO;
+import lms.doantotnghiep.dto.response.PdfResponse;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface EnrollmentService {
@@ -9,5 +13,11 @@ public interface EnrollmentService {
 
     void registerEnrollment(List<Integer> enrollIds);
 
-    List<EnrollmentDTO> getEnrollmentFilter(String type, Integer userId);
+    List<EnrollmentDTO> getEnrollmentFilter(String type, Integer userId, String currentRole);
+
+    void addPDFInEnrollment(EnrollmentDTO enrollmentDTO, Integer userId) throws IOException;
+
+    List<PdfResponse> getPDFFilesByEnrollmentId(Integer enrollmentId);
+
+    boolean hasEnrolledCourse(Integer userId, String url);
 }

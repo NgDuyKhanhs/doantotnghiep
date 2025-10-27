@@ -37,11 +37,7 @@ export class ProfileComponent implements OnInit {
   }
 
   getProfile() {
-    this.userService.getProfile().subscribe(res => {
-      if (res != null) {
-        this.user = res
-      }
-    })
+    this.user = this.route.snapshot.data['user'];
   }
 
   selectTab(tabId: string) {

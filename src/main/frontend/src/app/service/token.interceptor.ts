@@ -47,19 +47,21 @@ export class TokenInterceptor implements HttpInterceptor {
   private handle401Error(request: HttpRequest<any>, next: HttpHandler) {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
-      this.refreshTokenSubject.next(null);
+      // @ts-ignore
+      this.refreshTokenSubject.next();
 
       return this.authService.refreshToken().pipe(
         switchMap((res: any) => {
           console.log(res)
           this.isRefreshing = false;
           this.cookieService.set('accessToken', res.accessToken, { path: '/' });
-          this.refreshTokenSubject.next(res.accessToken);
+          // @ts-ignore
+          this.refreshTokenSubject.next();
           return next.handle(this.addTokenHeader(request, res.accessToken));
         }),
         catchError((err) => {
           this.isRefreshing = false;
-          // this.logout(); // logout nếu refresh token cũng lỗi
+          // this.logout(); // logout nếu refresh token cũn g lỗi
           return throwError(() => err);
         })
       );

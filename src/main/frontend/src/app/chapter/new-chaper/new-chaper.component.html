@@ -1,0 +1,180 @@
+<p-toast></p-toast>
+<div class="container-fluid" style="padding-top: 10px">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-column flex-lg-row title-tab mb-2">
+      <h6 style="margin:0; font-weight: bold;margin-left: 10px">Tạo môn học</h6>
+      <div>
+
+        <i class="bi bi-x" style="margin-right:10px;cursor: pointer"></i>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="row">
+      <!-- Left side -->
+      <div class="col-lg-8">
+        <!-- Basic information -->
+        <div class="card mb-4 rounded-0">
+          <div class="card-body">
+            <h3 class="h6 mb-4" style="font-weight: bold">Giảng viên</h3>
+            <div class="row">
+              <div class="col-lg-6">
+
+                <div class="mb-3">
+                  <label class="form-label text-sm">Đối tượng</label>
+                  <div class="wrap-input100 validate-input">
+                    <div class="flex-1">
+                      <select
+                        [(ngModel)]="selectedTeacher"
+                        (click)="getListTeacher()"
+                        name="name"
+                        class="input100 w-100 border border-gray-300 rounded-xl px-3 py-2 rounded-2 custom-select"
+                        style="color: #2aa493; width:  100%"
+                      >
+                        <option *ngFor="let i of teachers" [ngValue]="i" style="color: #2aa493">
+                          {{ i.fullname }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Email</label>
+                  <input
+                    disabled
+                    type="email"
+                    class="form-control"
+                    name="email"
+                    [value]="selectedTeacher?.email || ''"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Address -->
+
+        <div class="card mb-4 rounded-0">
+          <div class="card-body ">
+            <h3 class="h6 mb-4 text-sm" style="font-weight: bold">Khóa học</h3>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Tên môn</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="name"
+                    [(ngModel)]="selectedCourse.name"
+                  />
+                </div>
+              </div>
+<!--              <div class="col-lg-6">-->
+<!--                <div class="mb-3">-->
+<!--                  <label class="form-label text-sm">Số lượng đăng ký</label>-->
+<!--                  <input-->
+<!--                    type="number"-->
+<!--                    class="form-control"-->
+<!--                    name="available"-->
+<!--                    [(ngModel)]="this.available"-->
+<!--                  />-->
+<!--                </div>-->
+<!--              </div>-->
+            </div>
+
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Lớp</label>
+                  <div class="wrap-input100 validate-input">
+                    <div class="flex-1">
+                      <select
+                        [(ngModel)]="selectedClass"
+                        (click)="getListClasses()"
+                        name="name"
+                        class="input100 w-100 border border-gray-300 rounded-xl px-3 py-2 rounded-2 custom-select"
+                        style="color: #2aa493; width: 100%"
+                      >
+                        <option *ngFor="let i of classes" [ngValue]="i" style="color: #2aa493">
+                          {{ i.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Số tín chỉ</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="credits"
+                    [(ngModel)]="selectedCourse.credits"
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- Right side -->
+      <div class="col-lg-4">
+        <!-- Avatar -->
+        <div class="card mb-4 rounded-0">
+          <div class="card mb-4 rounded-0">
+            <div class="card-body">
+              <h3 class="h6" style="font-weight: bold">Ảnh khóa học</h3>
+
+              <input
+                class="form-control"
+                type="file"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+              >
+
+              <img
+                *ngIf="imagePreviewUrls.length > 0"
+                [src]="imagePreviewUrls[0]"
+                alt="Ảnh khóa học"
+                style="max-width: 300px; margin: 0 auto; border-radius: 2px; display: flex; padding-top: 10px"
+              />
+
+              <img
+                *ngIf="imagePreviewUrls.length == 0"
+                src="https://phothinhanoi.vn/assets/img/empty.png"
+                alt="Ảnh khóa học"
+                style="max-width: 300px; margin: 0 auto; border-radius: 2px; display: flex; padding-top: 10px"
+              />
+            </div>
+        </div>
+        <div class="card mb-4 rounded-0">
+          <div class="card-body">
+            <h3 class="h6" style="font-weight: bold">Cài đặt</h3>
+<!--            <ul class="list-group list-group-flush mx-n2">-->
+<!--              <li class="list-group-item px-0 d-flex justify-content-between align-items-start">-->
+<!--                <div class="ms-2 me-auto">-->
+<!--                  <h6 class="mb-0 text-sm">Đóng đăng ký khi đủ thành viên</h6>-->
+<!--                </div>-->
+<!--                <div class="form-check form-switch">-->
+<!--                  <input class="form-check-input" type="checkbox" role="switch" name="locked" [(ngModel)]="locked">-->
+<!--                </div>-->
+<!--              </li>-->
+<!--            </ul>-->
+          </div>
+
+        </div>
+        <!-- From Uiverse.io by mi-series -->
+        <div>
+          <button (click)="create()" style="float: right; text-transform: none;" class="btn"><i class="animation"></i>Lưu<i class="animation"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

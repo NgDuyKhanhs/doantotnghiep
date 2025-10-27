@@ -5,19 +5,31 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lms.doantotnghiep.domain.Enrollment;
 import lms.doantotnghiep.domain.User;
+import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
+import lms.doantotnghiep.dto.PdfDTO;
+import lms.doantotnghiep.dto.response.PdfResponse;
 import lms.doantotnghiep.enums.AppException;
 import lms.doantotnghiep.enums.ErrorConstant;
 import lms.doantotnghiep.repository.CourseRepository;
 import lms.doantotnghiep.repository.EnrollmentRepository;
 import lms.doantotnghiep.repository.UserRepository;
 import lms.doantotnghiep.service.EnrollmentService;
+import lms.doantotnghiep.service.PdfWatermarkService;
+import lms.doantotnghiep.service.upload.ImageService;
+import lms.doantotnghiep.service.upload.PdfService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -33,6 +45,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager entityManager;
 
+    @Autowired
+    private PdfService pdfService;
+    @Autowired
+    private PdfWatermarkService pdfWatermarkService;
     @Override
     public List<EnrollmentDTO> getAllEnrollments(Integer classId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -60,7 +76,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     Enrollment enrollment1 = enrollment.get();
                     if (!enrollment1.isLocked()) {
                         enrollment1.setRegistered(enrollment1.getRegistered() + 1);
-                        if (Objects.equals(enrollment1.getRegistered(), enrollment1.getAvailable())) {
+                        if (Objects.equals(enrollment1.getRegistered(), enrollment1.getAvailable()) && enrollment1.isLockWhenFull()) {
                             enrollment1.setLocked(true);
                         }
                         enrollmentRepository.save(enrollment1);
@@ -78,41 +94,55 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<EnrollmentDTO> getEnrollmentFilter(String type, Integer userId) {
+    public List<EnrollmentDTO> getEnrollmentFilter(String type, Integer userId, String currentRole) {
         List<EnrollmentDTO> enrollmentDTOS;
         Map<String, Object> params = new HashMap<>();
         String sql = "";
         if (type.equals("Chưa đăng ký")) {
-            sql = "select e.enrollid   as enrollId, " +
+            sql = "SELECT e.enrollid   AS enrollId, " +
                     "       e.available, " +
                     "       e.registered, " +
-                    "       e.start_time as startTime, " +
-                    "       e.end_time   as endTime, " +
-                    "       e.course_id  as courseId, " +
+                    "       e.start_time AS startTime, " +
+                    "       e.end_time   AS endTime, " +
+                    "       e.course_id  AS courseId, " +
                     "       e.locked, " +
-                    "       c.user_id as userId " +
-                    "from enrollmenttbl e " +
-                    "         join dbo.coursetbl c on e.course_id = c.course_id " +
-                    "         join usertbl u on u.class_id = c.class_id " +
-                    "         join classtbl cl on cl.class_id = c.class_id " +
-                    "         left join enrollmentusertbl eu ON eu.enrollid = e.enrollid AND eu.userid = u.user_id " +
-                    "where c.class_id = u.class_id and u.user_id = :id AND eu.enrollid IS NULL;";
+                    "       c.user_id    AS userId, " +
+                    "       c.banner as banner " +
+                    "FROM enrollmenttbl e " +
+                    "         LEFT JOIN coursetbl c ON e.course_id = c.course_id " +
+                    "         LEFT JOIN classtbl cl ON cl.class_id = c.class_id " +
+                    "         LEFT JOIN enrollmentusertbl eu " +
+                    "               ON eu.enrollid = e.enrollid AND eu.userid = :id " +
+                    "WHERE eu.userid IS NULL";
 
-        } else if (type.equals("Đã đăng ký")) {
-            sql = "select e.enrollid as enrollId, " +
+        } else if (type.equals("Đã đăng ký") && currentRole.equals("ROLE_USER")) {
+            sql = "SELECT e.enrollid   AS enrollId, " +
                     "       e.available, " +
                     "       e.registered, " +
-                    "       e.start_time as startTime, " +
-                    "       e.end_time   as endTime, " +
-                    "       e.course_id  as courseId, " +
+                    "       e.start_time AS startTime, " +
+                    "       e.end_time   AS endTime, " +
+                    "       e.course_id  AS courseId, " +
                     "       e.locked, " +
-                    "       c.user_id as userId " +
-                    "from enrollmenttbl e " +
-                    "         join dbo.coursetbl c on e.course_id = c.course_id " +
-                    "         join usertbl u on u.class_id = c.class_id " +
-                    "         join classtbl cl on cl.class_id = c.class_id " +
-                    "         join enrollmentusertbl eu ON eu.enrollid = e.enrollid AND eu.userid = u.user_id " +
-                    "where c.class_id = u.class_id and u.user_id = :id";
+                    "       c.user_id    AS userId, " +
+                    "       c.banner as banner " +
+                    "FROM enrollmenttbl e " +
+                    "         LEFT JOIN coursetbl c ON e.course_id = c.course_id " +
+                    "         LEFT JOIN classtbl cl ON cl.class_id = c.class_id " +
+                    "         INNER JOIN enrollmentusertbl eu ON eu.enrollid = e.enrollid " +
+                    "WHERE eu.userid = :id";
+        } else if (type.equals("Đã đăng ký") && currentRole.equals("ROLE_TEACHER")) {
+            sql = "SELECT e.enrollid   AS enrollId, " +
+                    "                           e.available, " +
+                    "                           e.registered, " +
+                    "                           e.start_time AS startTime, " +
+                    "                           e.end_time   AS endTime, " +
+                    "                           e.course_id  AS courseId, " +
+                    "                           e.locked, " +
+                    "                           c.user_id    AS userId, " +
+                    "                           c.banner as banner " +
+                    "                    FROM enrollmenttbl e " +
+                    "                             LEFT JOIN coursetbl c ON e.course_id = c.course_id " +
+                    "                    WHERE c.user_id = :id";
         }
         params.put("id", userId);
         Query query = entityManager.createNativeQuery(sql, "EnrollmentDTO");
@@ -122,6 +152,65 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             enrollmentDTO.setCourse(courseRepository.findCourseByID(enrollmentDTO.getCourseId()));
         });
         return enrollmentDTOS;
+    }
+
+    public void addPDFInEnrollment(EnrollmentDTO enrollmentDTO, Integer userId) throws IOException {
+        Optional<Enrollment> enrollment = enrollmentRepository.findById(enrollmentDTO.getEnrollId());
+        if (enrollment.isPresent()) {
+            Enrollment en = enrollment.get();
+
+            if (enrollmentDTO.getPdfFiles() != null && !enrollmentDTO.getPdfFiles().isEmpty()) {
+                List<PdfDTO> pdfDtos = enrollmentDTO.getPdfFiles();
+                List<PdfDTO> savedPdfs = new ArrayList<>();
+
+                for (PdfDTO pdfDto : pdfDtos) {
+                    String base64File = pdfDto.getPdfFile();
+                    if (base64File == null || base64File.trim().isEmpty()) {
+                        throw new AppException(ErrorConstant.FILE_ERROR);
+                    }
+
+                    if (base64File.contains(",")) {
+                        base64File = base64File.split(",")[1];
+                    }
+
+                    base64File = base64File.replaceAll("\\s+", "");
+                    byte[] pdfBytes = Base64.getDecoder().decode(base64File);
+                    ByteArrayInputStream pdfInput = new ByteArrayInputStream(pdfBytes);
+                    File watermarkedFile = pdfWatermarkService.addWatermark(pdfInput, userId);
+                    byte[] watermarkedBytes = Files.readAllBytes(watermarkedFile.toPath());
+                    String watermarkedBase64 = Base64.getEncoder().encodeToString(watermarkedBytes);
+                    watermarkedFile.delete();
+
+                    String publicId = pdfService.uploadPdfBytes(watermarkedBytes, pdfDto.getNameFile());
+
+                    PdfDTO savedPdf = new PdfDTO();
+                    savedPdf.setPdfFile(publicId);
+                    savedPdf.setNameFile(pdfDto.getNameFile());
+                    savedPdf.setCreatedAt(
+                            pdfDto.getCreatedAt() != null
+                                    ? pdfDto.getCreatedAt()
+                                    : Timestamp.valueOf(LocalDateTime.now())
+                    );
+
+                    savedPdfs.add(savedPdf);
+                }
+
+                en.getPdfFiles().addAll(savedPdfs);
+                enrollmentRepository.save(en);
+            }
+        }
+    }
+
+
+
+    @Override
+    public List<PdfResponse> getPDFFilesByEnrollmentId(Integer enrollmentId) {
+        return enrollmentRepository.getPDFFilesByEnrollmentId(enrollmentId);
+    }
+
+    @Override
+    public boolean hasEnrolledCourse(Integer userId, String pdfId) {
+        return enrollmentRepository.existsByUserIdAndPdfId(userId, pdfId);
     }
 
     public static void setParams(Query query, Map<String, Object> params) {

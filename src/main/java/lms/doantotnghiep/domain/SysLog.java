@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "syslogtbl")
-public class SysLog {
+public class  SysLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "syslogId")
@@ -27,4 +27,10 @@ public class SysLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    @Column(name = "description",columnDefinition = "NVARCHAR(255)")
+    private String description;
+
+    @Column(name = "name_device",columnDefinition = "NVARCHAR(255)")
+    private String nameDevice;
+
 }

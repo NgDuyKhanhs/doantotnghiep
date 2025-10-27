@@ -1,0 +1,287 @@
+<!-- do-assignments.component.html -->
+<div class="assignment-container">
+
+  <!-- ========== HEADER VỚI TIMER ========== -->
+  <div class="assignment-header">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <!-- Thông tin bài tập -->
+        <div class="col-md-6">
+          <h4 class="mb-1">{{ assignment?.title }}</h4>
+          <small class="text-muted">{{ assignment?.description }}</small>
+        </div>
+
+        <!-- Timer và Progress -->
+        <div class="col-md-6 text-end">
+          <div class="timer"
+               [class.warning]="timeRemaining < 300"
+               [class.danger]="timeRemaining < 60">
+            <i class="bi bi-clock-fill"></i>
+            <span class="time">{{ formattedTime }}</span>
+          </div>
+          <div class="progress-info mt-2">
+            <small>
+              <i class="bi bi-check-circle"></i>
+              Đã trả lời: <strong>{{ getAnsweredCount() }}/{{ assignment?.questions?.length }}</strong>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="container-fluid mt-4 pb-5">
+    <div class="row">
+
+      <!-- ========== SIDEBAR NAVIGATION ========== -->
+      <div class="col-lg-3 col-md-4">
+        <div class="question-nav card shadow-sm sticky-sidebar">
+          <div class="card-header bg-secondary text-white">
+            <h6 class="mb-0">
+              <i class="bi bi-list-check"></i> Danh sách câu hỏi
+            </h6>
+          </div>
+
+          <div class="card-body">
+            <!-- Grid câu hỏi -->
+            <div class="question-grid">
+              <button
+                *ngFor="let q of assignment?.questions; let i = index"
+                type="button"
+                class="question-number-btn"
+                [class.active]="i === currentQuestionIndex"
+                [class.answered]="answers[i]?.selectedChoiceId !== null"
+                (click)="goToQuestion(i)"
+                [title]="'Câu ' + (i + 1)"
+              >
+                {{ i + 1 }}
+              </button>
+            </div>
+
+            <!-- Chú thích -->
+            <div class="legend mt-3 pt-3 border-top">
+              <div class="legend-item">
+                <span class="legend-box active"></span>
+                <small>Đang làm</small>
+              </div>
+              <div class="legend-item">
+                <span class="legend-box answered"></span>
+                <small>Đã trả lời</small>
+              </div>
+              <div class="legend-item">
+                <span class="legend-box"></span>
+                <small>Chưa trả lời</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút nộp bài -->
+        <button
+          type="button"
+          class="btn btn-success w-100 mt-3 btn-lg shadow"
+          (click)="openConfirmDialog()"
+          [disabled]="isSubmitting"
+        >
+          <i class="bi bi-send-check-fill"></i>
+          {{ isSubmitting ? 'Đang nộp bài...' : 'Nộp bài' }}
+        </button>
+
+        <!-- Nút thoát -->
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100 mt-2"
+          (click)="exitAssignment()"
+          [disabled]="isSubmitting"
+        >
+          <i class="bi bi-x-circle"></i> Thoát
+        </button>
+      </div>
+
+      <!-- ========== MAIN QUESTION AREA ========== -->
+      <div class="col-lg-9 col-md-8">
+        <div class="question-card card shadow">
+
+          <!-- Card Header -->
+          <div class="card-header bg-gradient">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0 text-white">
+                <i class="bi bi-patch-question"></i>
+                Câu {{ currentQuestionIndex + 1 }}/{{ assignment?.questions?.length }}
+              </h5>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-star-fill text-warning"></i>
+                {{ currentAnswer?.selectedChoiceId !== null ? 'Đã trả lời' : 'Chưa trả lời' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Body - Question Content -->
+          <div class="card-body">
+            <!-- Question Text -->
+            <div class="question-text mb-4">
+              <p class="mb-0">{{ currentQuestion?.text }}</p>
+            </div>
+
+            <!-- Choices List -->
+            <div class="choices-container">
+              <div
+                *ngFor="let choice of currentQuestion?.choices; let i = index"
+                class="choice-item"
+                [class.selected]="currentAnswer?.selectedChoiceId === choice.id"
+                (click)="selectAnswer(choice.id)"
+              >
+                <!-- Radio Button -->
+                <div class="choice-radio">
+                  <input
+                    type="radio"
+                    [name]="'question-' + currentQuestion?.id"
+                    [id]="'choice-' + choice.id"
+                    [value]="choice.id"
+                    [checked]="currentAnswer?.selectedChoiceId === choice.id"
+                    (click)="selectAnswer(choice.id)"
+                  />
+                </div>
+
+                <!-- Choice Label -->
+                <label [for]="'choice-' + choice.id" class="choice-label">
+                  <span class="choice-letter">{{ String.fromCharCode(65 + i) }}</span>
+                  <span class="choice-text">{{ choice.text }}</span>
+                </label>
+
+                <!-- Checkmark Icon -->
+                <div class="checkmark" *ngIf="currentAnswer?.selectedChoiceId === choice.id">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!currentQuestion?.choices || currentQuestion?.choices?.length === 0"
+                 class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle"></i>
+              Câu hỏi này chưa có lựa chọn.
+            </div>
+          </div>
+
+          <!-- Card Footer - Navigation -->
+          <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <!-- Previous Button -->
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="previousQuestion()"
+                [disabled]="currentQuestionIndex === 0"
+              >
+                <i class="bi bi-arrow-left"></i> Câu trước
+              </button>
+
+              <!-- Question Counter -->
+              <span class="text-muted">
+                {{ currentQuestionIndex + 1 }} / {{ assignment?.questions?.length }}
+              </span>
+
+              <!-- Next Button -->
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="nextQuestion()"
+                [disabled]="currentQuestionIndex === assignment?.questions?.length - 1"
+              >
+                Câu sau <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL XÁC NHẬN NỘP BÀI ========== -->
+<div class="modal fade"
+     [class.show]="showConfirmDialog"
+     [style.display]="showConfirmDialog ? 'block' : 'none'"
+     *ngIf="showConfirmDialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-send-check"></i> Xác nhận nộp bài
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="closeConfirmDialog()"
+          [disabled]="isSubmitting">
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <i class="bi bi-info-circle-fill text-info" style="font-size: 3rem;"></i>
+        </div>
+
+        <p class="text-center mb-3">
+          Bạn đã trả lời
+          <strong class="text-success">{{ getAnsweredCount() }}</strong> /
+          <strong>{{ assignment?.questions?.length }}</strong> câu hỏi.
+        </p>
+
+        <div *ngIf="getAnsweredCount() < assignment?.questions?.length"
+             class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle"></i>
+          Bạn còn <strong>{{ assignment?.questions?.length - getAnsweredCount() }}</strong> câu chưa trả lời!
+        </div>
+
+        <p class="text-center">Bạn có chắc chắn muốn nộp bài không?</p>
+
+        <div class="alert alert-danger mb-0">
+          <small>
+            <i class="bi bi-lock-fill"></i>
+            <strong>Lưu ý:</strong> Sau khi nộp bài, bạn không thể chỉnh sửa câu trả lời.
+          </small>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeConfirmDialog()"
+          [disabled]="isSubmitting">
+          <i class="bi bi-x-circle"></i> Hủy
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="submitAssignment()"
+          [disabled]="isSubmitting">
+          <i class="bi bi-check-circle"></i>
+          {{ isSubmitting ? 'Đang nộp...' : 'Xác nhận nộp bài' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade"
+     [class.show]="showConfirmDialog"
+     *ngIf="showConfirmDialog">
+</div>
+
+<!-- ========== LOADING OVERLAY ========== -->
+<div class="loading-overlay" *ngIf="isSubmitting">
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="text-white mt-3">Đang nộp bài...</p>
+</div>

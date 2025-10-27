@@ -1,36 +1,53 @@
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
-<div class="">
-  <div class="row">
-    <div class="col-lg-12">
-      <div class="main-box clearfix">
-        <div class="table-responsive">
-          <table class="table user-list">
-            <tbody>
-            <tr>
-              <td style="display: flex;justify-content: start;align-items: center;">
-                <img src="https://www.science.co.il/internet/browsers/PDF-doc-256.png" alt="">
-                <p style="margin: 0" class="user-link">Chương 1</p>
-              </td>
-              <td>
-                Truy cập gần nhất: 30p trước
-              </td>
-              <td>
-                Ngày đăng tải: 16/7/2025
-              </td>
-              <td style="width: 5%;">
-                <a href="#" class="table-link danger">
-									<span class="fa-stack">
-										<i class="fa fa-square fa-stack-2x"></i>
-										<i class="fa fa-trash-o fa-stack-1x fa-inverse"></i>
-									</span>
-                </a>
-              </td>
+<p-toast></p-toast>
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<br>
+
+<div class="container bootdey">
+  <div class="col-md-12">
+      <div class="portlet light bordered">
+        <div class="portlet-title tabbable-line">
+          <div class="caption caption-md">
+            <i class="icon-globe theme-font hide"></i>
+            <span class="caption-subject font-blue-madison bold uppercase">Tài liệu</span>
+          </div>
+        </div>
+        <div class="portlet-body">
+          <label for="pdfUpload" class="btn btn-dark m-2 rounded-0" style="float: right" *ngIf="currentRole == 'ROLE_TEACHER'">
+            Tải lên PDF
+          </label>
+          <input
+            type="file"
+            id="pdfUpload"
+            accept="application/pdf"
+            (change)="onFilesSelected($event)"
+            hidden
+          />
+        <button *ngIf="collectPDF.length > 0" (click)="uploadPDF()"  class="btn btn-success m-2 rounded-0" style="float: right">Lưu</button>
+
+          <table class="table">
+            <tbody *ngIf="collectPDF.length > 0">
+            <tr *ngFor="let pdf of collectPDF" class="active">
+              <th style="background: #c3f1c3" scope="row"><img width="30px" src="https://upload.wikimedia.org/wikipedia/commons/3/38/Icon_pdf_file.svg"/></th>
+              <td style="background: #c3f1c3; padding-top: 13px">{{pdf.name}}</td>
+              <td style="background: #c3f1c3; padding-top: 13px;cursor: pointer;text-align: right;"><a href="{{pdf.blob}}" style="color: black" target="_blank"><i class="bi bi-eye" ></i></a></td>
+              <td style="background: #c3f1c3; padding-top: 13px;cursor: pointer"><i class="bi bi-x-lg" (click)="remove(pdf.name)"></i></td>
             </tr>
+
+            </tbody>
+
+            <tbody *ngIf="currentPDFFiles.length > 0">
+            <tr *ngFor="let pdf of currentPDFFiles" class="active">
+              <th scope="row"><img width="30px" src="https://upload.wikimedia.org/wikipedia/commons/3/38/Icon_pdf_file.svg"/></th>
+              <td style=" padding-top: 13px">{{pdf.nameFile}}</td>
+              <td style=" padding-top: 13px">{{formatTime(pdf.createdAt)}}</td>
+              <td style=" padding-top: 13px;cursor: pointer;text-align: center" (click)="viewPdf(pdf.idEnroll, pdf.pdfFile)"><i class="bi bi-file-earmark-arrow-down"></i></td>
+            </tr>
+<!--            <iframe *ngFor="let url of currentPDFFiles" [src]="getSafeUrl(url)" width="100%" height="100px"></iframe>-->
 
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+
   </div>
 </div>

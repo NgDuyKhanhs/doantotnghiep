@@ -2,6 +2,7 @@ package lms.doantotnghiep.domain;
 
 import jakarta.persistence.*;
 import lms.doantotnghiep.dto.EnrollmentDTO;
+import lms.doantotnghiep.dto.PdfDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -32,6 +35,7 @@ import java.time.LocalDateTime;
                                                 @ColumnResult(name = "courseId", type = Integer.class),
                                                 @ColumnResult(name = "locked", type = boolean.class),
                                                 @ColumnResult(name = "userId", type = Integer.class),
+                                                @ColumnResult(name = "banner", type = String.class),
                                         }
                                 ),
                         }
@@ -52,5 +56,13 @@ public class Enrollment {
     private Integer available;
     private Integer registered;
     private boolean locked;
-
+    private boolean lockWhenFull;
+    @ElementCollection
+    @CollectionTable(
+            name = "enrollment_pdf_files",
+            joinColumns = @JoinColumn(name = "enrollid")
+    )
+    private List<PdfDTO> pdfFiles = new ArrayList<>();
+    @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Assignment> assignments;
 }

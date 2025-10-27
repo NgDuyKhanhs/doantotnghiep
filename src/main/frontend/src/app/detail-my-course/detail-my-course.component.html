@@ -16,6 +16,10 @@
                     Nội dung
                   </a></li>
                 <li class="nav-item">
+                  <a routerLink="bai-tap" [ngClass]="{ active: selectedTab === 'assignments' }" (click)="selectTab('assignments')" routerLinkActive="active" class="nav-link_">
+                    Bài tập
+                  </a></li>
+                <li class="nav-item">
                   <a routerLink="giang-vien" [ngClass]="{ active: selectedTab === 'actions' }" (click)="selectTab('actions')" routerLinkActive="active" class="nav-link_">
                     Giảng viên
                   </a></li>

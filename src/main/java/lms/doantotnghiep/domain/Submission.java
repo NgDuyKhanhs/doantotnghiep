@@ -18,15 +18,29 @@ public class Submission {
     @Column(name = "submissionId")
     private Integer id;
 
-    private String filePath;
-
-    private LocalDateTime submittedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id")
+    @JoinColumn(name = "assignment_id", nullable = false)
     private Assignment assignment;
 
-    @ManyToOne
-    @JoinColumn(name = "course_user_id")
-    private CourseUser courseUser;
+    @Column(name = "start_time")
+    private LocalDateTime startTime = LocalDateTime.now();
+
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
+    @Column(name = "status")
+    private String status = "IN_PROGRESS";
+
+    @Column(name = "score")
+    private Double score;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

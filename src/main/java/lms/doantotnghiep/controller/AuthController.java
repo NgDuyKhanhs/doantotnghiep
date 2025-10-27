@@ -31,8 +31,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestBody UserDTO userDTO) {
-        ResponseLoginDTO response = userService.login(userDTO);
+            @RequestBody UserDTO userDTO,  HttpServletRequest request) {
+        ResponseLoginDTO response = userService.login(userDTO, request);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, response.getRefreshCookie().toString())
                 .body(Map.of("accessToken", response.getAccessToken()));

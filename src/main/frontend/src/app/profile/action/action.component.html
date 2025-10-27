@@ -1,1 +1,65 @@
-<p>action works!</p>
+<div class="tab-content p30" style="overflow: auto">
+  <div style="font-size: 13px" id="tab2" class="tab-pane active">
+    <table class="table">
+      <thead>
+      <tr>
+        <th scope="col">Người thực hiện</th>
+        <th scope="col">Thao tác</th>
+        <th scope="col">Thiết bị</th>
+        <th scope="col">Diễn giải</th>
+        <th scope="col">Ngày</th>
+        <th scope="col">Giờ</th>
+        <th scope="col">Địa chỉ</th>
+        <th scope="col">Trạng thái</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr style="cursor: pointer" *ngFor="let i of dataShow;let j = index"
+          [class.row-selected]="this.selectedRows.indexOf(i) !== -1"
+          (click)="selectRow(i, $event, syslogs)">
+        <td >{{user.fullname}}</td>
+        <td>{{i.action}}</td>
+        <td>{{i.nameDevice}}</td>
+        <td>{{i.description}}</td>
+        <td>{{formatDate(i.startTime)}}</td>
+        <td>{{formatTime(i.startTime)}}</td>
+        <td>{{i.ipAddress}}</td>
+        <td [ngClass]="getStatusClass(i.status)">
+          {{ userService.convertStatus(i.status) }}
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+    <div class="footer-dynamic-report">
+      <div style="padding-right: 16px;">
+        <div class="row" style="height: 20px;width: 100%">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-9 col-form-label" style="font-size: 10px"
+              ><span></span>Số lượng: {{ syslogs.length }}
+              </label>
+
+            </div>
+
+          </div>
+          <div class="col-md-6">
+            <div class="row justify-content-end pagination-container">
+              <ngb-pagination
+                class="ngb-pagination"
+                [size]="'sm'"
+                [collectionSize]="syslogs.length"
+                [(page)]="page"
+                [pageSize]="itemsPerPage"
+                [maxSize]="5"
+                [rotate]="true"
+                [boundaryLinks]="true"
+                (pageChange)="loadPage(page)"
+              ></ngb-pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -11,7 +11,7 @@
     <nav id="navmenu" class="navmenu">
       <ul>
         <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Trang chủ' }" (click)="selectTab('Trang chủ')" routerLink="trang-chu" routerLinkActive="active">Trang chủ</a></li>
-        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Thời khóa biểu' }" (click)="selectTab('Thời khóa biểu')" routerLink="thoi-khoa-bieu" routerLinkActive="active">Thời khóa biểu</a></li>
+<!--        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Thời khóa biểu' }" (click)="selectTab('Thời khóa biểu')" routerLink="thoi-khoa-bieu" routerLinkActive="active">Thời khóa biểu</a></li>-->
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

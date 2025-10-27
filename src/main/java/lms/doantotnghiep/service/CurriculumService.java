@@ -11,4 +11,5 @@ public interface CurriculumService {
     Course getCurriculumById(Integer id);
     void deleteCurriculumById(Integer id);
     void updateCurriculumById(Integer id, Course course);
+    void createCurriculum(CourseDTO courseDTO);
 }

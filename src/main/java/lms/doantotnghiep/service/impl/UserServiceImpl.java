@@ -2,6 +2,10 @@ package lms.doantotnghiep.service.impl;
 
 import com.cloudinary.api.exceptions.ApiException;
 import com.nimbusds.jose.JOSEException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.*;
 import lms.doantotnghiep.domain.Class;
 import lms.doantotnghiep.dto.EnrollmentDTO;
@@ -33,9 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -68,6 +70,12 @@ public class UserServiceImpl implements UserService {
     private CourseRepository courseRepository;
     @Autowired
     private EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    private SysLogRepository sysLogRepository;
+    @Autowired
+    @PersistenceContext(unitName = "entityManagerFactory")
+    private EntityManager entityManager;
 
     @Override
     public void register(UserDTO userDTO) {
@@ -129,7 +137,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseLoginDTO login(UserDTO userDTO) {
+    public ResponseLoginDTO login(UserDTO userDTO, HttpServletRequest request) {
         var user = userRepository
                 .findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new AppException(ErrorConstant.INVALID_USERNAME_PASSWORD));
@@ -148,13 +156,81 @@ public class UserServiceImpl implements UserService {
                 .path("/")
                 .maxAge(refreshableDuration)
                 .build();
-
+        checkAndLogLogin(user, request, "Đăng nhập");
         return ResponseLoginDTO.builder()
                 .userId(user.getId())
                 .accessToken(jwt)
                 .refreshCookie(refreshCookie)
                 .build();
     }
+    public String detectDeviceName(String userAgent) {
+        if (userAgent.contains("iPad")) {
+            return "iPad - Safari Mobile (iOS)";
+        } else if (userAgent.contains("iPhone")) {
+            return "iPhone - Safari Mobile (iOS)";
+        } else if (userAgent.contains("Android")) {
+            return "Android - Chrome";
+        } else if (userAgent.contains("Windows")) {
+            return "Windows - Chrome/Edge";
+        } else if (userAgent.contains("Mac OS X")) {
+            return "MacOS - Safari/Chrome";
+        }
+        return "Unknown Device";
+    }
+    private void checkAndLogLogin(User user, HttpServletRequest request, String action) {
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
+
+        List<SysLog> recentLogs = sysLogRepository.findRecentByUserId(user.getId());
+        SysLog lastLog = recentLogs.isEmpty() ? null : recentLogs.get(0);
+
+        boolean suspicious = false;
+        StringBuilder desc = new StringBuilder();
+
+        if (lastLog != null) {
+            if (!currentIp.equals(lastLog.getIpAddress())) {
+                suspicious = true;
+                desc.append("IP thay đổi");
+            }
+
+            boolean existedDevice = sysLogRepository.existsByUserIdAndNameDevice(user.getId(), deviceName);
+            if (!existedDevice) {
+                suspicious = true;
+                desc.append("Thiết bị mới");
+            }
+
+            long countIn5Min = sysLogRepository.countRecentLogins(user.getId(), LocalDateTime.now().minusMinutes(5));
+            if (countIn5Min > 3) {
+                suspicious = true;
+                desc.append("Quá nhiều yêu cầu trong 5 phút. ");
+            }
+        }
+
+        // Ghi log
+        SysLog log = new SysLog();
+        log.setUser(user);
+        log.setStartTime(LocalDateTime.now());
+        log.setNameDevice(deviceName);
+        log.setAction(action);
+        log.setStatus(suspicious ? 4 : 0); // 0 = thành công, 4 = cảnh báo
+        log.setIpAddress(currentIp);
+        log.setDescription(desc.toString());
+        sysLogRepository.save(log);
+
+        // Gửi cảnh báo nếu bất thường
+        if (suspicious) {
+            mailService.sendSuspiciousLoginEmail(
+                    user.getEmail(),
+                    user.getFullname(),
+                    currentIp,
+                    deviceName,
+                    LocalDateTime.now().toString()
+            );
+        }
+    }
+
+
 
     @Override
     public TokenResponse refreshToken(String refreshToken) throws ParseException, JOSEException {
@@ -166,7 +242,7 @@ public class UserServiceImpl implements UserService {
         var email = signedRefreshJWT.getJWTClaimsSet().getSubject();
         var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorConstant.UNAUTHENTICATED));
         UserDetailsImple userDetailsImple = UserDetailsImple.build(user);
-        var accessToken = jwtTokenProvider.generateJwtToken(userDetailsImple , TokenType.ACCESS_TOKEN);
+        var accessToken = jwtTokenProvider.generateJwtToken(userDetailsImple, TokenType.ACCESS_TOKEN);
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -196,37 +272,115 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void uploadEnrollment(UploadEnrollmentReq uploadEnrollmentReq) {
-        EnrollmentDTO dto = uploadEnrollmentReq.getEnrollmentDTO();
-
-        if (dto == null) {
+    public void uploadEnrollment(EnrollmentDTO enrollmentDTO) {
+        if (enrollmentDTO == null) {
             throw new AppException(ErrorConstant.INVALID_ENROLLMENT_DTO);
         }
 
-        Course course = courseRepository.findById(dto.getCourseId())
+        Course course = courseRepository.findById(enrollmentDTO.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorConstant.COURSE_NOT_FOUND));
 
-        if (dto.getStartTime() == null || dto.getEndTime() == null) {
+        if (enrollmentDTO.getStartTime() == null || enrollmentDTO.getEndTime() == null) {
             throw new AppException(ErrorConstant.INVALID_TIME_RANGE);
         }
 
-        if (dto.getStartTime().after(dto.getEndTime())) {
+        if (enrollmentDTO.getStartTime().after(enrollmentDTO.getEndTime())) {
             throw new AppException(ErrorConstant.INVALID_TIME_RANGE);
         }
 
-        if (dto.getAvailable() == null || dto.getAvailable() <= 0) {
+        if (enrollmentDTO.getAvailable() == null || enrollmentDTO.getAvailable() <= 0) {
             throw new AppException(ErrorConstant.INVALID_AVAILABLE);
         }
 
-        Enrollment enrollment = new Enrollment();
-        enrollment.setLocked(dto.isLocked());
-        enrollment.setAvailable(dto.getAvailable());
-        enrollment.setStartTime(dto.getStartTime().toLocalDateTime());
-        enrollment.setEndTime(dto.getEndTime().toLocalDateTime());
-        enrollment.setCourse(course);
+        LocalDateTime start = enrollmentDTO.getStartTime().toLocalDateTime();
+        LocalDateTime end = enrollmentDTO.getEndTime().toLocalDateTime();
 
+        boolean isDuplicate = enrollmentRepository.existsByCourseIdAndTimeOverlap(
+                enrollmentDTO.getCourseId(), start, end);
+
+        if (isDuplicate) {
+            throw new AppException(ErrorConstant.DUPLICATE_ENROLLMENT);
+        }
+
+        Enrollment enrollment = new Enrollment();
+        enrollment.setAvailable(enrollmentDTO.getAvailable());
+        enrollment.setStartTime(start);
+        enrollment.setEndTime(end);
+        enrollment.setCourse(course);
+        enrollment.setRegistered(0);
+        enrollment.setLockWhenFull(enrollmentDTO.isLockWhenFull());
         enrollmentRepository.save(enrollment);
     }
 
+    @Override
+    public List<UserDTO> getAllStudents(String className) {
+        List<UserDTO> userDTOS = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        String sql = switch (className) {
+            case "Công nghệ thông tin" -> "select u.user_id    as id, " +
+                    "       u.email, " +
+                    "       u.avatar, " +
+                    "       u.created_at as created, " +
+                    "       u.fullname, " +
+                    "       CASE " +
+                    "           WHEN ru.roleid = 1 " +
+                    "               THEN 'Sinh viên' " +
+                    "           ELSE 'Chưa có quyền' " +
+                    "           END      as roleName " +
+                    "from usertbl u " +
+                    "         join roleusertbl ru on u.user_id = ru.userid " +
+                    "where ru.roleid = 1 and u.class_id = 1";
+            case "An toàn thông tin" -> "select u.user_id    as id, " +
+                    "       u.email, " +
+                    "       u.avatar, " +
+                    "       u.created_at as created, " +
+                    "       u.fullname, " +
+                    "       CASE " +
+                    "           WHEN ru.roleid = 1 " +
+                    "               THEN 'Sinh viên' " +
+                    "           ELSE 'Chưa có quyền' " +
+                    "           END      as roleName " +
+                    "from usertbl u " +
+                    "         join roleusertbl ru on u.user_id = ru.userid " +
+                    "where ru.roleid = 1 and u.class_id = 2";
+            case "Điện tử viễn thông" -> "select u.user_id    as id, " +
+                    "       u.email, " +
+                    "       u.avatar, " +
+                    "       u.created_at as created, " +
+                    "       u.fullname, " +
+                    "       CASE " +
+                    "           WHEN ru.roleid = 1 " +
+                    "               THEN 'Sinh viên' " +
+                    "           ELSE 'Chưa có quyền' " +
+                    "           END      as roleName " +
+                    "from usertbl u " +
+                    "         join roleusertbl ru on u.user_id = ru.userid " +
+                    "where ru.roleid = 1 and u.class_id = 3";
+            default -> "";
+        };
+        Query query = entityManager.createNativeQuery(sql, "UserDTO");
+        setParams(query, params);
+        userDTOS = query.getResultList();
+        return userDTOS;
+    }
 
+    @Override
+    public UserDTO getTeacherByID(Integer id) {
+        return userRepository.getTeacherByID(id);
+    }
+
+    @Override
+    public List<UserDTO> getListUserFromEnrollment(Integer enrollId) {
+        return userRepository.getListUserFromEnrollment(enrollId);
+    }
+
+    public static void setParams(Query query, Map<String, Object> params) {
+        if (params != null && !params.isEmpty()) {
+            Set<Map.Entry<String, Object>> set = params.entrySet();
+            for (Map.Entry<String, Object> obj : set) {
+                if (obj.getValue() == null) query.setParameter(obj.getKey(), "");
+                else query.setParameter(obj.getKey(), obj.getValue());
+            }
+        }
+    }
 }

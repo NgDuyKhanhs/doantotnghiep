@@ -8,10 +8,10 @@ import {BehaviorSubject, Observable} from "rxjs";
 export class TokenService {
   constructor(public cookieService: CookieService) {}
   private tokenSubject = new BehaviorSubject<string | null>(null);
-  updateToken(token: any) {
-    this.cookieService.set('accessToken', token);
-    this.tokenSubject.next(token);  // Cập nhật token ngay lập tức
-  }
+  // updateToken(token: any) {
+  //   this.cookieService.set('accessToken', token);
+  //   this.tokenSubject.next();  // Cập nhật token ngay lập tức
+  // }
   getTokenUpdates(): Observable<any> {
     return this.tokenSubject.asObservable();  // Lắng nghe các thay đổi của token
   }

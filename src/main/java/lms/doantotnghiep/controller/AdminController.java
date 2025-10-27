@@ -1,8 +1,11 @@
 package lms.doantotnghiep.controller;
 
+import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
 import lms.doantotnghiep.dto.UserDTO;
 import lms.doantotnghiep.dto.request.UploadEnrollmentReq;
+import lms.doantotnghiep.enums.AppException;
+import lms.doantotnghiep.service.CurriculumService;
 import lms.doantotnghiep.service.EnrollmentService;
 import lms.doantotnghiep.service.UserService;
 import lms.doantotnghiep.service.impl.UserDetailsImple;
@@ -16,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -27,8 +31,11 @@ public class AdminController {
     @Autowired
     private EnrollmentService enrollmentService;
 
+    @Autowired
+    private CurriculumService curriculumService;
+
     @GetMapping("/get-list-teacher")
-    public ResponseEntity<?> activeAccount(Authentication authentication) {
+    public ResponseEntity<?> getListTeachers(Authentication authentication) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         List<UserDTO> userDTOS = new ArrayList<>();
         if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
@@ -48,11 +55,60 @@ public class AdminController {
     }
 
     @PostMapping("/upload-enrollment")
-    public ResponseEntity<?> uploadEnrollment(@RequestBody UploadEnrollmentReq uploadEnrollmentReq, Authentication authentication) {
+    public ResponseEntity<?> uploadEnrollment(@RequestBody EnrollmentDTO enrollmentDTO, Authentication authentication) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            userService.uploadEnrollment(uploadEnrollmentReq);
+            try {
+                userService.uploadEnrollment(enrollmentDTO);
+                return ResponseEntity.ok().body(Map.of(
+                        "success", true,
+                        "message", "Tạo khóa học thành công"
+                ));
+            } catch (AppException e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", e.getMessage()
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                        "success", false,
+                        "message", "Tạo khóa học thất bại: " + e.getMessage()
+                ));
+            }
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>("Tạo khóa học thành công", HttpStatus.OK);
+    }
+
+    @GetMapping("/get-list-users")
+    public ResponseEntity<?> getListUsers(@RequestParam String className, Authentication authentication) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            userDTOS = userService.getAllStudents(className);
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
+    }
+
+    @PostMapping("/upload-course")
+    public ResponseEntity<?> uploadCourse(@RequestBody CourseDTO courseDTO, Authentication authentication) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            try {
+                curriculumService.createCurriculum(courseDTO);
+                return ResponseEntity.ok().body(Map.of(
+                        "success", true,
+                        "message", "Tạo khóa học thành công"
+                ));
+            } catch (AppException e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", e.getMessage()
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                        "success", false,
+                        "message", "Tạo khóa học thất bại: " + e.getMessage()
+                ));
+            }
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

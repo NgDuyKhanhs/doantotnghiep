@@ -60,4 +60,52 @@ public class MailServiceImpl implements MailService {
             // Xử lý lỗi khi gửi email
         }
     }
+
+    @Override
+    @Async
+    public void sendSuspiciousLoginEmail(String to, String name, String ip, String userAgent, String time) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("⚠️ Cảnh báo đăng nhập bất thường");
+
+            // Nội dung email HTML
+            String emailContent = "<html>" +
+                    "<head>" +
+                    "<style>" +
+                    "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; padding: 30px; }" +
+                    ".container { max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }" +
+                    "h2 { color: #e74c3c; text-align: center; }" +
+                    "p { font-size: 16px; color: #333333; line-height: 1.6; }" +
+                    ".info { background: #f2f2f2; padding: 10px; border-radius: 6px; font-size: 14px; }" +
+                    "</style>" +
+                    "</head>" +
+                    "<body>" +
+                    "<div class='container'>" +
+                    "<h2>⚠️ Cảnh báo đăng nhập bất thường</h2>" +
+                    "<p>Xin chào <b>" + name + "</b>,</p>" +
+                    "<p>Chúng tôi phát hiện một lần đăng nhập từ thiết bị hoặc địa chỉ IP lạ:</p>" +
+                    "<div class='info'>" +
+                    "<p><b>Thời gian:</b> " + time + "</p>" +
+                    "<p><b>Địa chỉ IP:</b> " + ip + "</p>" +
+                    "<p><b>Thiết bị (User-Agent):</b> " + userAgent + "</p>" +
+                    "</div>" +
+                    "<p>Nếu đây không phải là bạn, vui lòng đổi mật khẩu ngay lập tức để bảo vệ tài khoản.</p>" +
+                    "<p>Trân trọng,<br/>Đội ngũ bảo mật LMS</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            helper.setText(emailContent, true);
+
+            javaMailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            // Xử lý lỗi khi gửi email
+        }
+    }
+
 }

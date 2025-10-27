@@ -30,8 +30,6 @@ public class Course {
     @JoinColumn(name = "user_id")
     private User teacher;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Assignment> assignments;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Media> medias;

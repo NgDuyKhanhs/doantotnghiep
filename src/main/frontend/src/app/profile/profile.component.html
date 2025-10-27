@@ -1,4 +1,4 @@
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 <p-toast></p-toast>
 <div class="" style="background: white">
   <div class="row">
@@ -11,13 +11,14 @@
               <div class="col-md-12 col-sm-12 mb-3">
                 <div class="profile-header-img" style="margin-right: 20px;position: relative">
                   <img
-                    src="https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
+                    src="{{user.avatar}}"
                     alt="">
                 </div>
                 <div class="profile-header-info decor-text-1 m-lg-4 " style="margin-left: 20px">
                   <h4 class="m-t-0 m-b-1">{{user?.fullname}}</h4>
                   <p class=" text-secondary" *ngIf="currentRole == 'ROLE_USER'">Sinh viên</p>
                   <p class=" text-secondary" *ngIf="currentRole == 'ROLE_ADMIN'">Quản trị viên</p>
+                  <p class=" text-secondary" *ngIf="currentRole == 'ROLE_TEACHER'">Giảng viên</p>
                   <div class="d-flex position-relative">
                     <button class="Btn decor-text-1 position-absolute" style="right: 20px;top:0;cursor: pointer" (click)="logout()">
 
@@ -32,7 +33,7 @@
           <div>
             <ul class="profile-header-tab nav nav-tabs decor-text">
             </ul>
-            <ul class="profile-header-tab nav nav-tabs decor-text" *ngIf="currentRole != 'ROLE_TEACHER' && this.currentRole != 'ROLE_ADMIN'" style="cursor: pointer">
+            <ul class="profile-header-tab nav nav-tabs decor-text" style="cursor: pointer">
               <li class="nav-item">
                 <a routerLink="thong-tin-khac" [ngClass]="{ active: selectedTab === 'infors' }" (click)="selectTab('infors')" routerLinkActive="active" class="nav-link_">
                   Thông tin

@@ -1,5 +1,5 @@
+<p-toast></p-toast>
 <div class="container-fluid" style="padding-top: 10px">
-
   <div class="container">
     <div class="d-flex justify-content-between align-items-center flex-column flex-lg-row title-tab mb-2">
       <h6 style="margin:0; font-weight: bold;margin-left: 10px">Tạo khóa học</h6>
@@ -48,27 +48,44 @@
           </div>
         </div>
         <!-- Address -->
+
         <div class="card mb-4 rounded-0">
           <div class="card-body ">
             <h3 class="h6 mb-4 text-sm" style="font-weight: bold">Khóa học</h3>
-            <div class="mb-3">
-              <label class="form-label text-sm">Tên khóa học</label>
-              <div class="wrap-input100 validate-input">
-                <div class="flex-1">
-                  <select
-                    [(ngModel)]="selectedCourse"
-                    (click)="getListCourse()"
-                    name="name"
-                    class="input100 w-full border border-gray-300 rounded-xl px-3 py-2 rounded-2"
-                    style="color: #2aa493; width:  100%"
-                  >
-                    <option *ngFor="let i of courses" [ngValue]="i" style="color: #2aa493">
-                      {{ i.name }}
-                    </option>
-                  </select>
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Tên khóa học</label>
+                  <div class="wrap-input100 validate-input">
+                    <div class="flex-1">
+                      <select
+                        [(ngModel)]="selectedCourse"
+                        (click)="getListCourse()"
+                        name="name"
+                        class="input100 w-100 border border-gray-300 rounded-xl px-3 py-2 rounded-2 custom-select"
+                        style="color: #2aa493; width:  100%"
+                      >
+                        <option *ngFor="let i of courses" [ngValue]="i" style="color: #2aa493">
+                          {{ i.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  <label class="form-label text-sm">Số lượng đăng ký</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="available"
+                    [(ngModel)]="this.available"
+                  />
                 </div>
               </div>
             </div>
+
             <div class="row">
               <div class="col-lg-6">
                 <div class="mb-3">
@@ -78,7 +95,7 @@
                     type="email"
                     class="form-control"
                     name="email"
-                    [value]="selectedCourse?.className || 'Chưa có lớp'"
+                    [value]="selectedCourse?.className || 'Tất cả'"
                   />
                 </div>
               </div>
@@ -90,7 +107,7 @@
                     type="email"
                     class="form-control"
                     name="email"
-                    [value]="selectedCourse?.credits"
+                    [value]="selectedCourse?.credits|| 0"
                   />
                 </div>
               </div>
@@ -99,13 +116,13 @@
               <div class="col-lg-6">
                 <div class="mb-3">
                   <label class="form-label text-sm">Từ ngày</label>
-                  <input type="date" class="form-control">
+                  <input type="date" class="form-control" name="fromDate" [(ngModel)]="fromDate">
                 </div>
               </div>
               <div class="col-lg-6">
                 <div class="mb-3">
                   <label class="form-label text-sm">Đến ngày</label>
-                  <input type="date" class="form-control">
+                  <input type="date" class="form-control" name="toDate" [(ngModel)]="toDate">
                 </div>
               </div>
             </div>
@@ -118,20 +135,20 @@
         <!-- Avatar -->
         <div class="card mb-4 rounded-0">
           <div class="card-body">
-            <h3 class="h6" style="font-weight: bold">Ảnh khóa học</h3>
-
-            <input
-              class="form-control"
-              type="file"
-              (change)="onFileSelected($event)"
-              accept="image/*"
-            >
+            <h3 class="h6" style="font-weight: bold;">Ảnh khóa học</h3>
 
             <img
-              *ngIf="imagePreviewUrls.length > 0"
-              [src]="imagePreviewUrls[0]"
+              *ngIf="selectedCourse?.banner != null"
+              [src]="selectedCourse?.banner"
               alt="Ảnh khóa học"
-              style="max-width: 300px; margin: 0 auto; border-radius: 2px"
+              style="max-width: 300px; margin: 0 auto; border-radius: 2px; display: flex; padding-top: 10px"
+            />
+
+            <img
+              *ngIf="selectedCourse?.banner == null"
+              src="https://phothinhanoi.vn/assets/img/empty.png"
+              alt="Ảnh khóa học"
+              style="max-width: 300px; margin: 0 auto; border-radius: 2px; display: flex; padding-top: 10px"
             />
           </div>
         </div>
@@ -144,7 +161,7 @@
                   <h6 class="mb-0 text-sm">Đóng đăng ký khi đủ thành viên</h6>
                 </div>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" role="switch">
+                  <input class="form-check-input" type="checkbox" role="switch" name="locked" [(ngModel)]="locked">
                 </div>
               </li>
             </ul>
@@ -153,7 +170,7 @@
         </div>
         <!-- From Uiverse.io by mi-series -->
         <div>
-          <button style="float: right; text-transform: none;" class="btn"><i class="animation"></i>Lưu<i class="animation"></i>
+          <button (click)="register()" style="float: right; text-transform: none;" class="btn"><i class="animation"></i>Lưu<i class="animation"></i>
           </button>
         </div>
       </div>

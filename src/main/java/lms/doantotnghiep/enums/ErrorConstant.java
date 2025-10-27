@@ -26,13 +26,14 @@ public enum ErrorConstant {
     UNAUTHORIZED(1008, "Bạn không có quyền truy cập", HttpStatus.FORBIDDEN),
     CAPTCHA_INVALID(12, "Captcha không hợp lệ", HttpStatus.BAD_REQUEST),
     FAIL_UPLOAD_CLOUD(13, "Lỗi khi tải lên đám mây", HttpStatus.BAD_REQUEST),
+    FILE_ERROR(25, "File lỗi", HttpStatus.BAD_REQUEST),
     REGISTER_INVALID(21, "Bạn không có quyền đăng ký môn học này nữa!", HttpStatus.BAD_REQUEST),
 
-    INVALID_ENROLLMENT_DTO(14, "Dữ liệu enrollment không hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_ENROLLMENT_DTO(14, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST),
     COURSE_NOT_FOUND(15, "Không tìm thấy khóa học", HttpStatus.NOT_FOUND),
     INVALID_TIME_RANGE(16, "Thời gian bắt đầu phải trước thời gian kết thúc", HttpStatus.BAD_REQUEST),
-    INVALID_AVAILABLE(17, "Số lượng chỗ còn lại phải lớn hơn 0", HttpStatus.BAD_REQUEST);
-
+    INVALID_AVAILABLE(17, "Số lượng chỗ còn lại phải lớn hơn 0", HttpStatus.BAD_REQUEST),
+    DUPLICATE_ENROLLMENT(18, "Khóa học đã tồn tại", HttpStatus.BAD_REQUEST);
 
     ErrorConstant(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

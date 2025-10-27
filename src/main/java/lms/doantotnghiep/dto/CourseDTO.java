@@ -15,6 +15,7 @@ public class CourseDTO {
     private String banner;
     private Integer userId;
     private UserDTO user;
+    private Integer classId;
     public CourseDTO(Integer courseId, String name, double credits) {
         this.courseId = courseId;
         this.name = name;

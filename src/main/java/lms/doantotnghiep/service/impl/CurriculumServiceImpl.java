@@ -1,16 +1,24 @@
 package lms.doantotnghiep.service.impl;
 
+import lms.doantotnghiep.domain.Class;
 import lms.doantotnghiep.domain.Course;
+import lms.doantotnghiep.domain.User;
 import lms.doantotnghiep.dto.CourseDTO;
+import lms.doantotnghiep.enums.AppException;
+import lms.doantotnghiep.enums.ErrorConstant;
+import lms.doantotnghiep.repository.ClassRepository;
 import lms.doantotnghiep.repository.CourseRepository;
 import lms.doantotnghiep.repository.UserRepository;
 import lms.doantotnghiep.service.CurriculumService;
+import lms.doantotnghiep.service.upload.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CurriculumServiceImpl implements CurriculumService {
@@ -19,6 +27,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ClassRepository classRepository;
+
+    @Autowired
+    private ImageService imageService;
 
     @Override
     public List<CourseDTO> getAllCurriculum() {
@@ -46,5 +59,22 @@ public class CurriculumServiceImpl implements CurriculumService {
     @Override
     public void updateCurriculumById(Integer id, Course course) {
 
+    }
+
+    @Override
+    public void createCurriculum(CourseDTO courseDTO) {
+        if (courseDTO == null) {
+            throw new AppException(ErrorConstant.INVALID_ENROLLMENT_DTO);
+        }
+        Course course = new Course();
+        Optional<User> userOptional = userRepository.findById(courseDTO.getUserId());
+        Optional<Class> classOptional = classRepository.findById(courseDTO.getClassId());
+        userOptional.ifPresent(course::setTeacher);
+        classOptional.ifPresent(aClass -> course.setClassId(aClass.getId()));
+        String imageUrl = imageService.getUrlImage(courseDTO.getBanner());
+        course.setBanner(imageUrl);
+        course.setName(courseDTO.getName());
+        course.setCredits(courseDTO.getCredits());
+        courseRepository.save(course);
     }
 }

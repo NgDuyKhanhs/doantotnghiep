@@ -58,3 +58,21 @@ paypal:
   client-id: AQRh76tofCg634fmMdi8OPYaoi071Ztc5AF0vhm_veIlBWvimaln1OhaHEy-Iotjbgqjt729429nZAmw
   client-secret: EIAt-1JCfWCGIpMZru1BkZCWOLpukjQkI375pNnpjZv1qYap2bMLSUMpq2eDSaM4UXh6OR_9mqiIZgkO
   mode: sandbox # Use #sandbox' for testing and 'live' for Production
+
+
+#spring:
+#  rabbitmq:
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
+
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
+  session:
+    store-type: redis

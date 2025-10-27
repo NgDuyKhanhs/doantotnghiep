@@ -1,0 +1,193 @@
+<!-- assignment-form.component.html -->
+<p-toast></p-toast>
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="assignment-form-container">
+  <form [formGroup]="assignmentForm"  class="form-content">
+    <i class="bi bi-x" style="position: absolute; right: 10px; top: 10px;font-size: 20px" (click)="activeModal.close()"></i>
+    <section class="form-actions no-print" style="float: right">
+      <i (click)= "onSubmit()" class="bi bi-floppy mx-2"></i>
+      <i class="bi bi-printer mx-2" (click)="onPrint()" ></i>
+      <i class="bi bi-arrow-clockwise mx-2" (click)="onReset()"></i>
+    </section>
+    <!-- Assignment Info Section -->
+    <section class="form-section">
+
+      <div class="form-group">
+        <label for="title" class="label">Tiêu đề bài tập <span class="required">*</span></label>
+        <input
+          type="text"
+          id="title"
+          formControlName="title"
+          placeholder="Nhập tiêu đề bài tập"
+          class="form-input"
+        />
+        <div class="error-message" *ngIf="assignmentForm.get('title')?.invalid && submitted">
+          <span *ngIf="assignmentForm.get('title')?.errors?.['required']">Tiêu đề là bắt buộc</span>
+          <span *ngIf="assignmentForm.get('title')?.errors?.['minlength']">Tiêu đề phải có ít nhất 5 ký tự</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="label">Mô tả bài tập</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Nhập mô tả chi tiết bài tập"
+          rows="3"
+          class="form-textarea"
+        ></textarea>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="startTime" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+          <input
+            type="datetime-local"
+            id="startTime"
+            formControlName="startTime"
+            class="form-control"
+            [class.is-invalid]="assignmentForm.get('startDate')?.invalid && submitted"
+          />
+          <div class="invalid-feedback" *ngIf="assignmentForm.get('startDate')?.invalid && submitted">
+            Ngày bắt đầu là bắt buộc
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="endTime" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+          <input
+            type="datetime-local"
+            id="endTime"
+            formControlName="endTime"
+            class="form-control"
+            [class.is-invalid]="(assignmentForm.get('endTine')?.invalid || assignmentForm.errors?.['dateRange']) && submitted"
+          />
+          <div class="invalid-feedback" *ngIf="assignmentForm.get('endTine')?.invalid && submitted">
+            Ngày kết thúc là bắt buộc
+          </div>
+          <div class="text-danger small mt-1" *ngIf="assignmentForm.errors?.['dateRange'] && submitted">
+            Ngày kết thúc phải sau ngày bắt đầu
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="duration" class="form-label">Thời gian làm bài (phút) <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            id="duration"
+            formControlName="duration"
+            placeholder="Ví dụ: 60"
+            min="1"
+            class="form-control"
+            [class.is-invalid]="assignmentForm.get('duration')?.invalid && submitted"
+          />
+          <div class="invalid-feedback" *ngIf="assignmentForm.get('duration')?.invalid && submitted">
+            <span *ngIf="assignmentForm.get('duration')?.errors?.['required']">Thời gian làm bài là bắt buộc</span>
+            <span *ngIf="assignmentForm.get('duration')?.errors?.['min']">Thời gian làm bài phải lớn hơn 0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Questions Section -->
+    <section class="form-section">
+
+      <div class="section-header">
+        <h2 class="section-title">Câu hỏi</h2>
+        <button
+          type="button"
+          (click)="addQuestion()"
+          class="btn btn-secondary no-print rounded-0"
+        >
+          <span class="icon">+</span> Thêm câu hỏi
+        </button>
+      </div>
+
+      <div *ngIf="questionsArray.length === 0" class="empty-state">
+        <p>Chưa có câu hỏi.</p>
+      </div>
+
+      <div formArrayName="questions" class="questions-list">
+
+        <div
+          *ngFor="let question of questionsArray.controls; let qIndex = index"
+          [formGroupName]="qIndex"
+          class="question-card"
+        >
+          <hr *ngIf="qIndex > 0">
+          <!-- Question Header -->
+          <div class="question-header d-flex justify-content-between">
+            <h5>Câu {{ qIndex + 1 }}</h5>
+
+            <i class="bi bi-x-lg" (click)="removeQuestion(qIndex)"></i>
+          </div>
+
+          <!-- Question Text -->
+          <div class="form-group">
+            <label [for]="'question-' + qIndex" class="label">
+              Nội dung câu hỏi <span class="required">*</span>
+            </label>
+            <textarea
+              [id]="'question-' + qIndex"
+              formControlName="text"
+              placeholder="Nhập nội dung câu hỏi"
+              rows="2"
+              class="form-textarea"
+            ></textarea>
+            <div class="error-message" *ngIf="question.get('text')?.invalid && submitted">
+              <span *ngIf="question.get('text')?.errors?.['required']">Nội dung câu hỏi là bắt buộc</span>
+              <span *ngIf="question.get('text')?.errors?.['minlength']">Nội dung phải có ít nhất 10 ký tự</span>
+            </div>
+          </div>
+
+          <!-- Choices -->
+          <div class="choices-section">
+            <div class="choices-header">
+              <label class="label">Lựa chọn <span class="required">*</span><i style="margin-left: 5px" (click)="addChoice(qIndex)" class="bi bi-plus-circle-dotted"></i></label>
+            </div>
+
+            <div *ngIf="getChoicesArray(qIndex).length === 0" class="empty-choices">
+              <p>Chưa có lựa chọn</p>
+            </div>
+
+            <div
+              formArrayName="choices"
+              class="choices-list"
+            >
+              <div
+                *ngFor="let choice of getChoicesArray(qIndex).controls; let cIndex = index"
+                [formGroupName]="cIndex"
+                class="choice-item d-flex justify-content-center align-items-center"
+              >
+                <input
+                  type="radio"
+                  style="padding-right: 5px"
+                  [name]="'correct-' + qIndex"
+                  [value]="cIndex"
+                  (change)="setCorrectChoice(qIndex, cIndex)"
+                  [checked]="question.get('correctChoiceId')?.value === cIndex"
+                  class="radio-input"
+                />
+
+                <input
+                  type="text"
+                  formControlName="text"
+                  [placeholder]="'Lựa chọn ' + getQuestionNumber(cIndex)"
+                  class="form-input choice-input m-1"
+                  [ngClass]="{'radio-correct': question.get('correctChoiceId')?.value === cIndex}"
+                />
+                <i class="bi bi-x-lg"  (click)="removeChoice(qIndex, cIndex)"></i>
+              </div>
+            </div>
+
+            <div
+              *ngIf="question.get('correctChoiceId')?.invalid && submitted"
+              class="warning-message"
+            >
+              Chọn đáp án đúng cho câu hỏi này
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>

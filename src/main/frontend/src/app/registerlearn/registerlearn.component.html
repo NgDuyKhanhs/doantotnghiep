@@ -16,7 +16,7 @@
             </div>
           </div>
           <div class="col-12">
-            <div style="margin: 10px 0; padding-top: 25px">
+            <div *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'" style="margin: 10px 0; padding-top: 25px">
               <button routerLink = "them-moi" routerLinkActive="active"  class="btn btn-primary rounded-1" style="font-size: 12px"><i class="bi bi-plus" ></i> Thêm học phần</button>
             </div>
             <div class="card">

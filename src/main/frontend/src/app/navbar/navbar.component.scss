@@ -3,7 +3,7 @@
 @import 'bootstrap/scss/mixins';
 
 $font-primary: 'Comfortaa Light',Arial, sans-serif;
-$primary: rgba(178, 72, 72, 0.86);
+$primary: #2c3e50;
 
 body{
   font-family: $font-primary;
@@ -355,7 +355,7 @@ a[data-toggle="collapse"] {
 }
 
 .dropdown-wrapper .dropdown-list.d-block {
-  border-left: 1px solid #999; /* hiện line khi mở */
+  border-left: 1px solid rgba(153, 153, 153, 0.23); /* hiện line khi mở */
 }
 
 .dropdown-wrapper .dropdown-list::before {
@@ -364,8 +364,8 @@ a[data-toggle="collapse"] {
   top: -10px;
   left: -1px;
   width: 1px;
-  height: 0px;
-  background-color: #999; /* màu line giữa a và ul */
+  height: 0;
+  background-color: rgba(153, 153, 153, 0.22); /* màu line giữa a và ul */
   display: none;
 }
 

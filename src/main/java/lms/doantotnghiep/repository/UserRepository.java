@@ -24,12 +24,13 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     @Query(value = "SELECT * FROM usertbl WHERE email =  ?1", nativeQuery = true)
     Optional<User> findByEmailSigned(String email);
 
-    @Query(value = "select u.email, u.fullname from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3", nativeQuery = true)
+    @Query(value = "select u.user_id as id, u.email, u.fullname, u.avatar from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3", nativeQuery = true)
     List<UserDTO> getListTeachers();
 
-    @Query(value = "select u.email, u.fullname from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3 and user_id = ?1", nativeQuery = true)
+    @Query(value = "select u.user_id, u.email, u.fullname, u.avatar from usertbl u join roleusertbl ru on u.user_id = ru.userid where ru.roleid = 3 and user_id = ?1", nativeQuery = true)
     UserDTO getTeacherByID(Integer id);
 
-
+    @Query(value = "select u.user_id as id, u.email, u.fullname, u.avatar from usertbl u join dbo.enrollmentusertbl e on u.user_id = e.userid where e.enrollid = ?1", nativeQuery = true)
+    List<UserDTO> getListUserFromEnrollment(Integer id);
 
 }

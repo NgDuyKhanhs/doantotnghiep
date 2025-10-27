@@ -6,6 +6,7 @@ import {AuthService} from "../service/auth.service";
 import {catchError, of} from "rxjs";
 import {NotificationService} from "../service/notification.service";
 import {UserService} from "../service/user.service";
+import {NgxSpinnerService} from "ngx-spinner";
 
 @Component({
   selector: 'app-register',
@@ -17,24 +18,27 @@ export class RegisterComponent implements OnInit{
   classes: any = [];
   currentRole: any;
   selectedClass : any;
+
   constructor(private router: Router,
               private tokenService: TokenService,
               private notificationService: NotificationService,
               private authService: AuthService,
-              private userService: UserService) {
+              private userService: UserService,
+              private spinner: NgxSpinnerService) {
 
   }
 
   register() {
     this.user.classId = this.selectedClass;
+    this.spinner.show();
     this.authService.register(this.user).pipe(
-      // Xử lý lỗi trong pipeline
       catchError(error => {
         console.log(error)
         return of('Đăng ký thất bại. Vui lòng thử lại!');
       })
     ).subscribe(res => {
       if (res) {
+        this.spinner.hide();
         this.notificationService.showSuccess('Đăng ký thành công! Hãy kiểm tra email của bạn');
 
         // this.router.navigate(['/login']);

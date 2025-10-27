@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -29,7 +30,11 @@ public class EnrollmentDTO {
     private CourseDTO course;
     private boolean selected;
     private String className;
-    public EnrollmentDTO(int enrollId, Integer available,Integer registered, Timestamp  startTime, Timestamp  endTime, Integer courseId, boolean locked, Integer userId, String className) {
+    private boolean lockWhenFull;
+    private String banner;
+    // Thông tin file pdf
+    private List<PdfDTO> pdfFiles;
+    public EnrollmentDTO(int enrollId, Integer available,Integer registered, Timestamp  startTime, Timestamp  endTime, Integer courseId, boolean locked, Integer userId, String banner) {
         this.enrollId = enrollId;
         this.available = available;
         this.registered = registered;
@@ -38,7 +43,7 @@ public class EnrollmentDTO {
         this.courseId = courseId;
         this.locked = locked;
         this.userId = userId;
-        this.className = className;
+        this.banner = banner;
     }
 
 

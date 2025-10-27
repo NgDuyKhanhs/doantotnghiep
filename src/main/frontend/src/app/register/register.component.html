@@ -1,18 +1,10 @@
 <p-toast></p-toast>
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
 <body>
-
-
 <div class="limiter">
-  <div class="container-login100">
+  <div class="container-login100" style="height: 100vh">
     <div class="wrap-login100">
-      <div class="login100-pic js-tilt" data-tilt>
-        <img src="https://cdn.iconscout.com/icon/premium/png-256-thumb/continuous-learning-5465295-4570755.png?f=webp&w=256" alt="IMG">
-      </div>
-
       <form (ngSubmit)="register()" class="login100-form validate-form">
-					<span class="login100-form-title">
-						Đăng ký
-					</span>
 
         <div class="wrap-input100 validate-input" >
           <input class="input100" type="email" name="email" placeholder="Email" [(ngModel)]="user.email">
@@ -66,14 +58,8 @@
           </button>
         </div>
 
-        <div class="text-center p-t-12">
-						<span class="txt1">
-							Quên mật khẩu?
-						</span>
-        </div>
-
-        <div class="text-center p-t-50">
-          <a class="txt2" routerLink="/dang-nhap" routerLinkActive="active">
+        <div class="text-center p-t-20">
+          <a class="txt2 nav-link" routerLink="/dang-nhap" routerLinkActive="active">
             Đăng nhập
             <i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
           </a>

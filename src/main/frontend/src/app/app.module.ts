@@ -3,9 +3,9 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
-import {NgIf} from "@angular/common";
+import {DatePipe, NgIf} from "@angular/common";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {BrowserAnimationsModule, provideAnimations} from "@angular/platform-browser/animations";
 import {NgxSpinnerModule} from "ngx-spinner";
@@ -40,6 +40,12 @@ import { ContentComponent } from './detail-my-course/content/content.component';
 import { InforTeacherComponent } from './detail-my-course/infor-teacher/infor-teacher.component';
 import { ListStudentComponent } from './detail-my-course/list-student/list-student.component';
 import { CreateComponent } from './registerlearn/create/create.component';
+import { ClickOutsideDirective } from './directives/click-outside.directive';
+import { ListUserComponent } from './list-user/list-user.component';
+import { NewChaperComponent } from './chapter/new-chaper/new-chaper.component';
+import { AssignmentsComponent } from './detail-my-course/assignments/assignments.component';
+import { CreateAssignmentsComponent } from './modals/create-assignments/create-assignments.component';
+import { DoAssignmentsComponent } from './do-assignments/do-assignments.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -60,7 +66,14 @@ import { CreateComponent } from './registerlearn/create/create.component';
     ContentComponent,
     InforTeacherComponent,
     ListStudentComponent,
-    CreateComponent
+    CreateComponent,
+    ClickOutsideDirective,
+    ListUserComponent,
+    NewChaperComponent,
+    AssignmentsComponent,
+    CreateAssignmentsComponent,
+    DoAssignmentsComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -79,8 +92,10 @@ import { CreateComponent } from './registerlearn/create/create.component';
     RecaptchaModule,
     RecaptchaFormsModule,
     Button,
+    DatePipe,
+    ReactiveFormsModule
   ],
-  providers: [{provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true}, CookieService,provideToastr(),AuthGuard, provideAnimations(),MessageService, WebSocketService, ChatService],
+  providers: [{provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true}, CookieService,provideToastr(),AuthGuard, provideAnimations(),MessageService, WebSocketService, ChatService, DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

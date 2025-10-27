@@ -1,4 +1,4 @@
-<section class="intro" style="background-color: #f5f7fa;">
+<section class="intro" style="background-color: #f5f7fa;" *ngIf="!isCreateRoute">
   <div class="bg-image h-100" >
     <div class="mask d-flex h-100">
       <div class="container">
@@ -28,8 +28,8 @@
 <!--            </div>-->
 <!--          </div>-->
           <div class="col-12">
-            <div style="margin: 10px 0">
-              <button class="btn btn-primary rounded-1" style="font-size: 12px"><i class="bi bi-plus" ></i> Thêm học phần</button>
+            <div  *ngIf="token.getRoleFromToken() == 'ROLE_ADMIN'" style="margin: 10px 0">
+              <button routerLink = "them-moi" routerLinkActive="active" class="btn btn-primary rounded-1" style="font-size: 12px"><i class="bi bi-plus" ></i> Thêm học phần</button>
             </div>
             <div class="card">
               <div class="card-body p-0">
@@ -105,3 +105,4 @@
     </div>
   </div>
 </section>
+<router-outlet></router-outlet>
