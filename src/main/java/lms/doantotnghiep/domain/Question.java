@@ -2,6 +2,7 @@ package lms.doantotnghiep.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lms.doantotnghiep.domain.Assignment;
 import lms.doantotnghiep.domain.Choice;
@@ -25,7 +26,7 @@ public class Question {
     private String text;
 
     @Column(name = "correct_choice_id")
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private int correctChoiceId;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -34,4 +35,7 @@ public class Question {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignmentId")
     private Assignment assignment;
+
+    @JsonIgnore
+    public int getCorrectChoiceId() { return correctChoiceId; }
 }

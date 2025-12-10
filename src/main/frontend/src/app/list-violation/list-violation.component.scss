@@ -1,0 +1,44 @@
+.table {
+  font-size: 0.9rem;
+}
+
+.table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+  }
+}
+
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4em 0.75em;
+  font-weight: 500;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .d-flex.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}

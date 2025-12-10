@@ -4,18 +4,34 @@
 
 <div class="container bootdey">
   <div class="col-md-12">
-    <div class="portlet light bordered">
+    <div class="portlet light bordered" style="cursor: pointer">
       <div class="portlet-title tabbable-line">
-        <div class="caption caption-md">
+        <div class="caption caption-md" *ngIf="currentTab == 'Bài tập'">
           <i class="icon-globe theme-font hide"></i>
-          <span class="caption-subject font-blue-madison bold uppercase">Bài tập</span>
+          <span class="caption-subject font-blue-madison bold uppercase" (click)="navigateTab('Bài tập')">Bài tập</span>
+        </div>
+        <div class="caption caption-md" *ngIf="currentTab == 'Vi phạm'">
+          <i class="icon-globe theme-font hide"></i>
+          <span class="caption-subject font-blue-madison bold uppercase" (click)="navigateTab('Vi phạm')">Vi phạm</span>
         </div>
       </div>
-      <div class="portlet-body">
-        <label (click)="openTabCreate()" class="btn btn-dark m-2 rounded-0" style="float: right" *ngIf="currentRole == 'ROLE_TEACHER'">
+      <div class="portlet-body" *ngIf="currentTab == 'Bài tập'">
+        <label (click)="openTabCreate()" class="btn btn-outline-dark m-2 rounded-0" style="float: right" *ngIf="currentRole == 'ROLE_TEACHER'">
           Thêm bài tập
         </label>
         <table class="table">
+          <div class="controls mb-2" *ngIf="this.currentRole == 'ROLE_USER'">
+
+            <div class="controls__select-wrap">
+              <select id="typeSelect"
+                      class="controls__select"
+                      [(ngModel)]="selectedType"
+                      (ngModelChange)="onTypeChange($event)">
+                <option *ngFor="let t of TYPES" [value]="t.value">{{ t.label }}</option>
+              </select>
+
+            </div>
+          </div>
           <tbody *ngIf="collectPDF.length > 0">
           <tr *ngFor="let pdf of collectPDF" class="active">
             <th style="background: #c3f1c3" scope="row"><img width="30px" src="https://cdn-icons-png.flaticon.com/512/1430/1430896.png"/></th>
@@ -32,8 +48,10 @@
             <td style=" padding-top: 13px">{{pdf.title}}</td>
             <td style=" padding-top: 13px">{{pdf.duration}} phút</td>
             <td style=" padding-top: 13px">{{pdf.startTime| date: 'dd/MM/yyyy'}} - {{pdf.endTime| date: 'dd/MM/yyyy'}}</td>
-            <td style=" padding-top: 13px;cursor: pointer;text-align: center" (click)="openTabDo(pdf.id)">
-              <button class="btn btn-success rounded-0">Làm</button>
+            <td style=" padding-top: 13px;cursor: pointer;text-align: center" (click)="openTabDo(pdf.id, this.id)">
+              <button class="btn btn-outline-success rounded-0" *ngIf="selectedType == 'Chưa nộp'  && this.currentRole == 'ROLE_USER'">Làm</button>
+              <button class="btn btn-outline-success rounded-0" (click)="navigateTab('Vi phạm', pdf.id)" *ngIf="selectedType == 'Đã nộp' && this.currentRole == 'ROLE_USER'">Chi tiết</button>
+              <button class="btn btn-outline-success rounded-0" (click)="navigate(pdf.id)" *ngIf="this.currentRole == 'ROLE_TEACHER'">Chi tiết</button>
             </td>
           </tr>
           <!--            <iframe *ngFor="let url of currentPDFFiles" [src]="getSafeUrl(url)" width="100%" height="100px"></iframe>-->
@@ -41,6 +59,222 @@
           </tbody>
         </table>
       </div>
+
+      <ng-container *ngIf="currentTab == 'Vi phạm'">
+        <div class="container-fluid py-4">
+
+          <!-- History Content -->
+          <div *ngIf="history">
+            <!-- Back Button -->
+            <div class="mb-1">
+              <button class="btn btn-outline-secondary" onclick="history.back()">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+              </button>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card shadow-sm mb-4 border-0">
+              <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-1">
+                      <i class="bi bi-file-earmark-check-fill me-2"></i>Kết quả làm bài
+                    </h4>
+                    <p class="mb-0 opacity-75">
+                      <small>ID Bài làm: #{{ history.submissionId }}</small>
+                    </p>
+                  </div>
+                  <div class="text-end">
+            <span class="badge fs-6 px-3 py-2"
+                  [ngClass]="history.status === 'SUBMITTED' ? 'bg-success' : 'bg-warning text-dark'">
+              <i [class]="history.status === 'SUBMITTED' ? 'bi bi-check-circle-fill' : 'bi bi-hourglass-split'"></i>
+              {{ history.status === 'SUBMITTED' ? 'Đã nộp' : 'Đang làm' }}
+            </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body p-4">
+                <!-- Score Section -->
+                <div class="row g-4 mb-4">
+                  <div class="col-lg-6">
+                    <div class="text-center p-4 bg-light rounded-3">
+                      <h6 class="text-muted mb-3">Điểm số</h6>
+                      <div class="display-1 fw-bold mb-2" [ngClass]="getScoreClass(history.score)">
+                        {{ history.score | number:'1.1-1' }}
+                      </div>
+                      <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar"
+                             [ngClass]="getProgressBarClass(history.score)"
+                             [style.width.%]="getScorePercent(history.score)"></div>
+                      </div>
+                      <small class="text-muted">Thang điểm 10</small>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <div class="card border-0 bg-success bg-opacity-10 h-100">
+                          <div class="card-body text-center">
+                            <i class="bi bi-check-circle-fill text-success fs-2 mb-2"></i>
+                            <h3 class="mb-1 text-success fw-bold">{{ history.correctCount }}</h3>
+                            <small class="text-muted">Câu đúng</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="card border-0 bg-danger bg-opacity-10 h-100">
+                          <div class="card-body text-center">
+                            <i class="bi bi-x-circle-fill text-danger fs-2 mb-2"></i>
+                            <h3 class="mb-1 text-danger fw-bold">{{ history.totalQuestions - history.correctCount }}</h3>
+                            <small class="text-muted">Câu sai</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="row g-3">
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center p-3 bg-light rounded">
+                      <i class="bi bi-list-ol fs-3 text-primary me-3"></i>
+                      <div>
+                        <small class="text-muted d-block">Tổng số câu</small>
+                        <strong class="fs-5">{{ history.totalQuestions }}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center p-3 bg-light rounded">
+                      <i class="bi bi-clock-fill fs-3 text-info me-3"></i>
+                      <div>
+                        <small class="text-muted d-block">Thời gian làm</small>
+                        <strong class="fs-5">{{ formatTime(history.spentSeconds) }}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center p-3 bg-light rounded">
+                      <i class="bi bi-calendar-check fs-3 text-success me-3"></i>
+                      <div>
+                        <small class="text-muted d-block">Bắt đầu</small>
+                        <strong class="fs-6">{{ history.startTime | date:'dd/MM HH:mm' }}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="d-flex align-items-center p-3 bg-light rounded">
+                      <i class="bi bi-calendar-x fs-3 text-danger me-3"></i>
+                      <div>
+                        <small class="text-muted d-block">Nộp bài</small>
+                        <strong class="fs-6">{{ history.endTime | date:'dd/MM HH:mm' }}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Violations Card -->
+            <div class="card shadow-sm border-0">
+              <div class="card-header d-flex justify-content-between align-items-center"
+                   [ngClass]="history.violations.length > 0 ? 'bg-danger text-white' : 'bg-success text-white'">
+                <h5 class="mb-0">
+                  <i class="bi bi-shield-exclamation me-2"></i>Báo cáo vi phạm
+                </h5>
+                <span class="badge" [ngClass]="history.violations.length > 0 ? 'bg-white text-danger' : 'bg-white text-success'">
+          {{ history.violations.length }} vi phạm
+        </span>
+              </div>
+
+              <div class="card-body p-4">
+                <!-- No Violations -->
+                <div *ngIf="history.violations.length === 0" class="text-center py-5">
+                  <i class="bi bi-shield-check text-success" style="font-size: 4rem;"></i>
+                  <h5 class="mt-3 text-success">Không có vi phạm</h5>
+                  <p class="text-muted">Chúc mừng! Bạn đã hoàn thành bài thi một cách trung thực. 🎉</p>
+                </div>
+
+                <!-- Violations List -->
+                <div *ngIf="history.violations.length > 0" class="violations-list">
+                  <div *ngFor="let v of history.violations; let i = index"
+                       class="violation-item mb-3 p-3 border rounded-3 position-relative"
+                       [class.border-danger]="i === 0">
+
+                    <!-- Violation Number Badge -->
+                    <div class="position-absolute top-0 start-0 translate-middle">
+                      <span class="badge rounded-pill bg-danger">{{ i + 1 }}</span>
+                    </div>
+
+                    <div class="row align-items-start">
+                      <!-- Icon & Type -->
+                      <div class="col-auto">
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3 d-flex align-items-center justify-content-center"
+                             style="width: 56px; height: 56px;">
+                          <i [class]="'bi ' + getViolationIcon(v.typeViolation) + ' text-danger fs-4'"></i>
+                        </div>
+                      </div>
+
+                      <!-- Content -->
+                      <div class="col">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <div>
+                    <span class="badge me-2" [ngClass]="getBadgeClass(v.typeViolation)">
+                      {{ getViolationLabel(v.typeViolation) }}
+                    </span>
+                            <small class="text-muted">
+                              <i class="bi bi-clock me-1"></i>{{ v.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                            </small>
+                          </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-2">
+                          <small class="text-muted d-block mb-1"><strong>Chi tiết:</strong></small>
+                          <div class="bg-light p-2 rounded">
+                            <small class="font-monospace text-break">{{ v.description }}</small>
+                          </div>
+                        </div>
+
+                        <!-- Evidence Link -->
+                        <div *ngIf="v.evidence && v.evidence.trim()">
+                          <a [href]="v.evidence" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-paperclip me-1"></i>Xem bằng chứng
+                          </a>
+                        </div>
+
+                        <!-- Severity Indicator -->
+                        <div class="mt-2">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Violation Summary -->
+                <div *ngIf="history.violations.length > 0" class="alert alert-warning mt-4 mb-0" role="alert">
+                  <div class="d-flex align-items-start">
+                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                    <div>
+                      <h6 class="alert-heading mb-2">Lưu ý quan trọng</h6>
+                      <p class="mb-0">
+                        Hệ thống đã ghi nhận <strong>{{ history.violations.length }} vi phạm</strong> trong quá trình làm bài.
+                        Vi phạm có thể ảnh hưởng đến kết quả và được gửi tới giảng viên để xem xét.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
     </div>
 
   </div>

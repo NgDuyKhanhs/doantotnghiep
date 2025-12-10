@@ -23,13 +23,15 @@ import {NewChaperComponent} from "./chapter/new-chaper/new-chaper.component";
 import {UserResolver} from "./service/user.resolver";
 import {AssignmentsComponent} from "./detail-my-course/assignments/assignments.component";
 import {DoAssignmentsComponent} from "./do-assignments/do-assignments.component";
+import {ListViolationComponent} from "./list-violation/list-violation.component";
+import {ListTeacherComponent} from "./list-teacher/list-teacher.component";
 
 const routes: Routes = [
-  {path: 'trang-chu', component: HomeComponent, data: {animation: 'LoginComponent'}},
+  {path: 'trang-chu', component: HomeComponent, data: {animation: 'LoginComponent'}, canActivate: [AuthGuard]},
   {path: 'dang-nhap', component: LoginComponent, data: {animation: 'LoginComponent'}},
   {path: 'dang-ky', component: RegisterComponent, data: {animation: 'RegisterComponent'}},
-  {path: 'thoi-khoa-bieu', component: ChatBoxComponent, data: {animation: 'ChatBoxComponent'}},
-  {path: '', redirectTo: 'chat', pathMatch: 'full', data: {animation: 'ChatBoxComponent'}},
+  {path: 'thoi-khoa-bieu', component: ChatBoxComponent, data: {animation: 'ChatBoxComponent'}, canActivate: [AuthGuard]},
+  {path: '', redirectTo: 'dang-nhap', pathMatch: 'full', data: {animation: 'ChatBoxComponent'}},
   {path: 'active/:token', component: ActiveAccountComponent, data: {animation: 'LoginComponent'}},
   {
     path: 'thong-tin-ca-nhan',
@@ -66,10 +68,13 @@ const routes: Routes = [
       {path: 'bai-tap', component: AssignmentsComponent, data: {animation: 'LoginComponent'}},
       {path: 'giang-vien', component: InforTeacherComponent, data: {animation: 'LoginComponent'}},
       {path: 'danh-sach-hoc-vien', component: ListStudentComponent, data: {animation: 'LoginComponent'}},
+
     ], canActivate: [AuthGuard]
   },
-  {path:'danh-sach-sinh-vien', component: ListUserComponent},
-  {path: 'bai-tap/:id/lam-bai', component: DoAssignmentsComponent},
+  {path:'danh-sach-sinh-vien', component: ListUserComponent, canActivate: [AuthGuard]},
+  {path:'danh-sach-giang-vien', component: ListTeacherComponent, canActivate: [AuthGuard]},
+  {path: 'bai-tap/:id/lam-bai/:idEnroll', component: DoAssignmentsComponent, canActivate: [AuthGuard]},
+  {path: 'danh-sach-nop-bai/:id', component: ListViolationComponent, data: {animation: 'LoginComponent'}, canActivate: [AuthGuard]},
 
 ];
 

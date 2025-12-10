@@ -3,7 +3,12 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import {Router} from "@angular/router";
 import {CookieService} from "ngx-cookie-service";
 import {Observable} from "rxjs";
-
+export enum ActionType {
+  START = 'START',
+  REFRESH = 'REFRESH',
+  OUT = 'OUT',
+  UPDATE = 'UPDATE',
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -35,7 +40,10 @@ export class UserService {
   getAllTeachers(): Observable<any> {
     return this.http.get<any>(`${this.baseURL1}/get-list-teacher`);
   }
-
+  getUserByID(id: any): Observable<any> {
+    const params = new HttpParams().set('id', id);
+    return this.http.get<any>(`${this.baseURL1}/get-user-by-id`, {params});
+  }
 
   getFilterEnrollments(type: string): Observable<any> {
     const params = new HttpParams().set('type', type);
@@ -120,16 +128,42 @@ export class UserService {
     return this.http.post<any>(`${this.baseURL1}/upload-assignment`, createAssignmentDTO)
   }
 
-  getAssignmentById(id: any): Observable<any> {
-    return this.http.get(`${this.baseURL1}/get-assignment-by-${id}`);
+  getAssignmentById(id: any, type: any): Observable<any> {
+    const params = new HttpParams().set('type', type);
+    return this.http.get(`${this.baseURL1}/get-assignment-by-${id}`, { params });
   }
 
   getDetailAssignmentById(id: any): Observable<any> {
     return this.http.get(`${this.baseURL1}/get-detail-assignment-by-${id}`);
   }
-  start(assignmentId: any): Observable<any> {
-    const params = new HttpParams().set('assignmentId', assignmentId);
-    return this.http.post(`${this.baseURL1}/start`, {}, { params });
+  start(assignmentId: number, answers: any[], actionType: ActionType = ActionType.START): Observable<any> {
+    const params = new HttpParams()
+      .set('assignmentId', assignmentId.toString())
+      .set('actionType', actionType);
+
+    // Chỉ gửi body khi UPDATE để server cập nhật answersJsons
+    const body = actionType === 'UPDATE' ? (answers ?? []) : null;
+
+    return this.http.post(`${this.baseURL1}/start`, body, { params });
   }
 
+  submitAssignment(assignmentId: number, answers: any[]): Observable<any> {
+    const params = new HttpParams().set('assignmentId', assignmentId);
+    return this.http.post<any>(`${this.baseURL}/submit-assignment`, answers, { params });
+  }
+  createViolation(req: any): Observable<number> {
+    return this.http.post<any>(`${this.baseURL}/create-violation`, req);
+  }
+  getHistory(assignmentId: any): Observable<any> {
+    const params = new HttpParams().set('assignmentId', assignmentId.toString());
+    return this.http.get<any>(`${this.baseURL1}/submission-history`, { params });
+  }
+
+  getSubmissionList(assignmentId: number, status: string = ''): Observable<any[]> {
+    let params = new HttpParams()
+      .set('assignmentId', assignmentId.toString())
+      .set('status', status);
+
+    return this.http.get<any[]>(`${this.baseURL1}/submission-list`, { params });
+  }
 }

@@ -2027,3 +2027,9 @@ body{
 .portlet.box.grey-cararra>.portlet-title>.actions .btn-default>i {
   color: #fff
 }
+.active{
+  background: linear-gradient(90deg, #ddf6ff, rgba(37,99,235,0.02));
+  transform: translateY(-1px);
+  outline: none;
+  border-radius: 5px;
+}

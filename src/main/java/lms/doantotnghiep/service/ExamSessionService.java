@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ExamSessionService {
@@ -21,10 +22,23 @@ public class ExamSessionService {
     private ObjectMapper objectMapper;
     private static final String PREFIX = "EXAM_SESSION:";
 
-    public void saveExamSession(ExamSession session, long ttlMinutes) {
+    public void saveExamSession(ExamSession session, long ttlSeconds, boolean isNew) {
         String key = PREFIX + session.getUserId() + ":" + session.getAssignmentId();
-        redisTemplate.opsForValue().set(key, session, Duration.ofMinutes(ttlMinutes));
+        if (ttlSeconds <= 0) {
+            ttlSeconds = 3600;
+        }
+        if (isNew) {
+            redisTemplate.opsForValue().set(key, session, Duration. ofSeconds(ttlSeconds));
+        } else {
+            long existingTtl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+            if (existingTtl > 0) {
+                redisTemplate.opsForValue().set(key, session, Duration.ofSeconds(existingTtl));
+            } else {
+                redisTemplate.opsForValue().set(key, session, Duration.ofSeconds(ttlSeconds));
+            }
+        }
     }
+
 
     public ExamSession getExamSession(int userId, int assignmentId) {
         String key = PREFIX + userId + ":" + assignmentId;
@@ -33,11 +47,8 @@ public class ExamSessionService {
 
         ExamSession session = objectMapper.convertValue(data, ExamSession.class);
 
-        LocalDateTime start = LocalDateTime.parse(session.getStartTime(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-        long elapsed = Duration.between(start, LocalDateTime.now()).getSeconds();
-        long remaining = Math.max(session.getRemainingSeconds() - elapsed, 0);
+        Long ttl = redisTemplate.getExpire(key, java.util.concurrent.TimeUnit.SECONDS);
+        long remaining = (ttl != null && ttl > 0) ? ttl : 0L;
 
         session.setRemainingSeconds(remaining);
         return session;

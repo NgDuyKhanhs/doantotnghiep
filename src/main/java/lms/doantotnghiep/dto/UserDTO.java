@@ -5,11 +5,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.validation.constraints.NotBlank;
+import lms.doantotnghiep.domain.ViolationReport;
 import lombok.*;
 
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,7 +30,8 @@ public class UserDTO {
     private Timestamp created;
     private String avatar;
     private Integer id;
-
+    private List<CourseDTO> courseDTOS;
+    private List<ViolationReportDTO> violationReports;
     public UserDTO(Integer id,String email, String fullname, String avatar){
         this.id = id;
         this.email = email;
@@ -42,5 +45,13 @@ public class UserDTO {
         this.created = created;
         this.fullname = fullname;
         this.roleName = roleName;
+    }
+
+    public UserDTO(Integer id,String email, String fullname, String avatar, List<CourseDTO> courseDTOS){
+        this.id = id;
+        this.email = email;
+        this.fullname = fullname;
+        this.avatar = avatar;
+        this.courseDTOS = courseDTOS;
     }
 }

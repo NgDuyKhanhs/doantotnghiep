@@ -24,8 +24,10 @@ public class Choice {
     @JoinColumn(name = "question_id")
     private Question question;
 
+    private Boolean isCorrect;
     public Choice(int id, String text) {
         this.id = id;
         this.text = text;
     }
+
 }

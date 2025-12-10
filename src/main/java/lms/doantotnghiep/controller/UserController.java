@@ -6,13 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import lms.doantotnghiep.domain.Course;
 import lms.doantotnghiep.domain.SysLog;
 import lms.doantotnghiep.domain.User;
+import lms.doantotnghiep.domain.ViolationReport;
 import lms.doantotnghiep.dto.*;
+import lms.doantotnghiep.dto.request.AnswersJson;
+import lms.doantotnghiep.dto.request.CreateViolationRequest;
 import lms.doantotnghiep.dto.response.PdfResponse;
+import lms.doantotnghiep.dto.response.SubmitResult;
 import lms.doantotnghiep.enums.AppException;
-import lms.doantotnghiep.service.CurriculumService;
-import lms.doantotnghiep.service.EnrollmentService;
-import lms.doantotnghiep.service.SysLogService;
-import lms.doantotnghiep.service.UserService;
+import lms.doantotnghiep.service.*;
 import lms.doantotnghiep.service.impl.UserDetailsImple;
 import lms.doantotnghiep.service.upload.PdfService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +46,20 @@ public class UserController {
     private SysLogService sysLogService;
     @Autowired
     private PdfService pdfService;
+    @Autowired
+    private AssignmentService assignmentService;
     @GetMapping
     public ResponseEntity<?> getProfile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Unauthorized: Token không hợp lệ");
+        }
+
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         return new ResponseEntity<>(userDetailsImple, HttpStatus.OK);
     }
+
 
     @GetMapping("/get-curriculum")
     public ResponseEntity<?> viewCurriculum(Authentication authentication) {
@@ -119,7 +129,7 @@ public class UserController {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         UserDTO userDTO = new UserDTO();
         if (userDetailsImple != null) {
-            userDTO = userService.getTeacherByID(id);
+            userDTO = userService.getUserByID(id);
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
@@ -175,5 +185,52 @@ public class UserController {
             signedUrl = pdfService.generateSignedUrl(url);
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(signedUrl, HttpStatus.OK);
+    }
+
+    @PostMapping("/submit-assignment")
+    public ResponseEntity<?> submitAssignment(@RequestParam int assignmentId, @RequestBody List<AnswersJson> answersJsons, Authentication authentication) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        SubmitResult result = new SubmitResult();
+        if (userDetailsImple != null) {
+            result = assignmentService.submitExam(userDetailsImple.getId(),assignmentId, answersJsons);
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PostMapping("create-violation")
+    public ResponseEntity<?> createViolation(@RequestBody CreateViolationRequest req,
+                                    Authentication authentication,
+                                    @RequestHeader(value = "X-User-Id", required = false) Integer xUserId) {
+        if (req == null || req.getAssignmentID() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("EnrollID là bắt buộc");
+        }
+
+        Integer userId = null;
+
+        // Ưu tiên lấy từ principal nếu có
+        try {
+            UserDetailsImple principal = userService.getPrincipal(authentication);
+            if (principal != null) userId = principal.getId();
+        } catch (Exception ignored) {}
+
+        // Fallback: header
+        if (userId == null && xUserId != null) userId = xUserId;
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Không xác định được người dùng");
+        }
+
+        ViolationReport saved = assignmentService.createViolation(
+                userId,
+                req.getAssignmentID(),
+                safe(req.getTypeViolation()),
+                safe(req.getDescription()),
+                safe(req.getEvidence())
+        );
+        return ResponseEntity.ok(saved.getId());
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
     }
 }

@@ -1,6 +1,5 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RefModalService} from "../../ref-modal.service";
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {UserService} from "../../service/user.service";
 import {NotificationService} from "../../service/notification.service";
@@ -17,19 +16,20 @@ export class CreateAssignmentsComponent implements OnInit {
   assignmentForm!: FormGroup;
   submitted = false;
   data: any;
+
   constructor(
     private fb: FormBuilder,
     public activeModal: NgbActiveModal,
     private userService: UserService,
     private notify: NotificationService,
     private spinner: NgxSpinnerService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
     this.autoFillSampleData();
   }
+
   autoFillSampleData(): void {
     const sampleData = {
       title: "Bài tập 1",
@@ -49,6 +49,7 @@ export class CreateAssignmentsComponent implements OnInit {
     };
     this.fillFormFromJSON(sampleData);
   }
+
   fillFormFromJSON(data: any): void {
     try {
       // Reset form trước
@@ -65,7 +66,7 @@ export class CreateAssignmentsComponent implements OnInit {
         data.questions.forEach((question: any) => {
           const questionGroup = this.fb.group({
             text: [question.text || '', [Validators.required, Validators.minLength(10)]],
-            correctChoiceId: [question.correctChoiceId || null, Validators.required],
+            correctChoiceId: [question.correctChoiceId ?? null, Validators.required],
             choices: this.fb.array([])
           });
 
@@ -130,13 +131,12 @@ export class CreateAssignmentsComponent implements OnInit {
 
   removeChoice(qIndex: number, cIndex: number): void {
     const choicesArray = this.getChoicesArray(qIndex);
-    const question = this.questionsArray.at(qIndex);
+    const question = this.questionsArray.at(qIndex) as FormGroup;
     const currentCorrectId = question.get('correctChoiceId')?.value;
 
     if (currentCorrectId === cIndex) {
       question.patchValue({ correctChoiceId: null });
-    }
-    else if (currentCorrectId !== null && currentCorrectId > cIndex) {
+    } else if (currentCorrectId !== null && currentCorrectId > cIndex) {
       question.patchValue({ correctChoiceId: currentCorrectId - 1 });
     }
 
@@ -155,9 +155,10 @@ export class CreateAssignmentsComponent implements OnInit {
   }
 
   setCorrectChoice(qIndex: number, cIndex: number): void {
-    const question = this.questionsArray.at(qIndex);
+    const question = this.questionsArray.at(qIndex) as FormGroup;
     question.patchValue({ correctChoiceId: cIndex });
   }
+
   getFormValidationErrors(): string[] {
     const errors: string[] = [];
 
@@ -223,30 +224,38 @@ export class CreateAssignmentsComponent implements OnInit {
       this.spinner.show();
       const formData = this.assignmentForm.value;
 
+      // Gắn isCorrect cho choice theo chỉ số correctChoiceId
       const assignmentData: any = {
         title: formData.title,
         description: formData.description,
         startTime: formData.startTime,
         endTime: formData.endTime,
         duration: formData.duration,
-        questions: formData.questions.map((q: any) => ({
-          text: q.text,
-          correctChoiceId: q.correctChoiceId,
-          choices: q.choices.map((c: any) => ({
-            text: c.text
-          }))
-        }))
+        questions: formData.questions.map((q: any) => {
+          const correctIdx = Number(q.correctChoiceId);
+          return {
+            text: q.text,
+            correctChoiceId: correctIdx,
+            choices: q.choices.map((c: any, idx: number) => ({
+              text: c.text,
+              isCorrect: idx === correctIdx
+            }))
+          };
+        })
       };
+
       assignmentData.enrollId = this.data;
+
       this.assignmentCreated.emit(assignmentData);
       this.spinner.show();
+
       this.userService.uploadAssignment(assignmentData).subscribe({
-        next: (response) => {
-          this.notify.showSuccess("Tạo bài tập thành công")
+        next: () => {
+          this.notify.showSuccess("Tạo bài tập thành công");
           this.activeModal.close(assignmentData);
           this.spinner.hide();
         },
-        error: (error) => {
+        error: () => {
           this.spinner.hide();
         }
       });

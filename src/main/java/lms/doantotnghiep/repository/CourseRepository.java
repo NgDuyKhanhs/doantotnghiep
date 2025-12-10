@@ -19,5 +19,6 @@ public interface CourseRepository extends CrudRepository<Course, Integer> {
             "         left join usertbl u on u.user_id = c.user_id", nativeQuery = true)
     List<CourseDTO> getAllCourse();
 
-
+    @Query(value = "select course_id as courseId, name, credits from coursetbl where user_id = ?1", nativeQuery = true)
+    List<CourseDTO> findCoursesByUserID(Integer courseId);
 }

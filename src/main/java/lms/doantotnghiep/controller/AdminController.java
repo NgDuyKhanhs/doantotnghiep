@@ -44,6 +44,16 @@ public class AdminController {
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 
+    @GetMapping("/get-user-by-id")
+    public ResponseEntity<?> getUserByID(Authentication authentication, @RequestParam Integer id) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        UserDTO userDTO = new UserDTO();
+        if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            userDTO = userService.getMoreDetailsUser(id);
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
     @GetMapping("/get-all-enrollments")
     public ResponseEntity<?> getEligibleEnrollments(Authentication authentication) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
@@ -107,6 +117,31 @@ public class AdminController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                         "success", false,
                         "message", "Tạo khóa học thất bại: " + e.getMessage()
+                ));
+            }
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+
+    @PostMapping("/swap-course-for-user")
+    public ResponseEntity<?> swapCourseForUser(@RequestParam Integer courseID, @RequestParam Integer id, Authentication authentication) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            try {
+                userService.swapCourseForUser(courseID,id);
+                return ResponseEntity.ok().body(Map.of(
+                        "success", true,
+                        "message", "Thay giảng viên dạy thành công"
+                ));
+            } catch (AppException e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", e.getMessage()
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                        "success", false,
+                        "message", "Thay giảng viên dạy thát bại: " + e.getMessage()
                 ));
             }
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

@@ -8,10 +8,7 @@ import jakarta.persistence.Query;
 import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.*;
 import lms.doantotnghiep.domain.Class;
-import lms.doantotnghiep.dto.EnrollmentDTO;
-import lms.doantotnghiep.dto.ResponseLoginDTO;
-import lms.doantotnghiep.dto.TokenResponse;
-import lms.doantotnghiep.dto.UserDTO;
+import lms.doantotnghiep.dto.*;
 import lms.doantotnghiep.dto.request.UploadEnrollmentReq;
 import lms.doantotnghiep.enums.AppException;
 import lms.doantotnghiep.enums.ErrorConstant;
@@ -76,6 +73,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager entityManager;
+
+    @Autowired
+    private ViolationRepository violationRepository;
 
     @Override
     public void register(UserDTO userDTO) {
@@ -365,13 +365,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getTeacherByID(Integer id) {
-        return userRepository.getTeacherByID(id);
+    public UserDTO getUserByID(Integer id) {
+        return userRepository.getUserByID(id);
+    }
+
+    @Override
+    public UserDTO getMoreDetailsUser(Integer id) {
+        UserDTO userDTO = new UserDTO();
+        userDTO = userRepository.getDetailUserByID(id);
+        String userRole = userDTO.getRoleName();
+
+        if (userRole.equalsIgnoreCase("ROLE_TEACHER")) {
+            userDTO.setCourseDTOS(courseRepository.findCoursesByUserID(id));
+        } else if (userRole.equalsIgnoreCase("ROLE_USER")) {
+            userDTO.setViolationReports(violationRepository.findByUserId(id));
+        }
+
+        return userDTO;
     }
 
     @Override
     public List<UserDTO> getListUserFromEnrollment(Integer enrollId) {
         return userRepository.getListUserFromEnrollment(enrollId);
+    }
+
+    @Override
+    public void swapCourseForUser(Integer courseID, Integer id) {
+        Course existingCourse = courseRepository.findById(courseID)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseID));
+
+        User newTeacher = userRepository.findById(id)
+                . orElseThrow(() -> new RuntimeException("Teacher not found with id: " + id));
+
+        existingCourse.setTeacher(newTeacher);
+        courseRepository.save(existingCourse);
     }
 
     public static void setParams(Query query, Map<String, Object> params) {

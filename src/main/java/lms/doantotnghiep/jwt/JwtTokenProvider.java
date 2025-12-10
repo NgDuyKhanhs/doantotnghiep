@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Component
+@EnableConfigurationProperties
 public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
     @Value("${jwt.valid-duration}")

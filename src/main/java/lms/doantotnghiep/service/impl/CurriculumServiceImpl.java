@@ -38,7 +38,7 @@ public class CurriculumServiceImpl implements CurriculumService {
         List<CourseDTO> courseDTOList = new ArrayList<>();
         courseDTOList = courseRepository.getAllCourse();
         courseDTOList.forEach(course -> {
-            course.setUser(userRepository.getTeacherByID(course.getUserId()));
+            course.setUser(userRepository.getUserByID(course.getUserId()));
         });
         return courseDTOList;
     }

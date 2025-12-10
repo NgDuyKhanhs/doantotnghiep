@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.Normalizer;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -113,10 +115,16 @@ public class PdfService {
 
     public String generateSignedUrl(String publicId) {
         try {
+            ZonedDateTime vietnamTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            // 10 phút
+            long expirationTimestamp = vietnamTime.toEpochSecond() + 600; //
             return cloudinary.privateDownload(
-                    publicId,  // publicId đã có .pdf
+                    publicId,
                     "pdf",
-                    ObjectUtils.asMap("resource_type", "raw")
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "expires_at", expirationTimestamp
+                    )
             );
         } catch (Exception e) {
             throw new RuntimeException("Generate URL thất bại: " + e.getMessage(), e);

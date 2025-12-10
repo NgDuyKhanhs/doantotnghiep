@@ -1,5 +1,6 @@
 package lms.doantotnghiep.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,11 +25,12 @@ public class ViolationReport {
     private String description;
     @Column(columnDefinition = "NVARCHAR(255)")
     private String evidence;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "assignmentId")
+    private Assignment assignment;
 }

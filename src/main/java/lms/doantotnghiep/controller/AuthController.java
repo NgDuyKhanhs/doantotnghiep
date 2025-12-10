@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,10 +33,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody UserDTO userDTO,  HttpServletRequest request) {
-        ResponseLoginDTO response = userService.login(userDTO, request);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, response.getRefreshCookie().toString())
-                .body(Map.of("accessToken", response.getAccessToken()));
+        try {
+            ResponseLoginDTO response = userService.login(userDTO, request);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, response.getRefreshCookie().toString())
+                    .body(Map.of("accessToken", response.getAccessToken()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Thông tin đăng nhập sai!"));
+        }
     }
 
     @PostMapping("/register")

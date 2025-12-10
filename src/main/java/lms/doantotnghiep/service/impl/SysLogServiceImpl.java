@@ -2,6 +2,7 @@ package lms.doantotnghiep.service.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.SysLog;
+import lms.doantotnghiep.domain.User;
 import lms.doantotnghiep.dto.SysLogDTO;
 import lms.doantotnghiep.repository.SysLogRepository;
 import lms.doantotnghiep.repository.UserRepository;
@@ -22,12 +23,16 @@ public class SysLogServiceImpl implements SysLogService {
     private UserRepository userRepository;
 
     @Override
-    public SysLog saveSysLogFromUser(SysLogDTO sysLog, HttpServletRequest request) {
-        String ipAddress = request.getHeader("X-Forwarded-For");
-        if (ipAddress != null && !ipAddress.isEmpty() && !"unknown".equalsIgnoreCase(ipAddress)) {
+    public SysLog saveSysLogFromUser(
+            SysLogDTO sysLog,
+            HttpServletRequest request) {
 
-            ipAddress = ipAddress.split(",")[0];
+        String ipAddress = request.getHeader("X-Forwarded-For");
+
+        if (ipAddress != null && !ipAddress.isEmpty() && !"unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = ipAddress.split(",")[0].trim();
         } else {
+            // Thử lấy từ X-Real-IP
             ipAddress = request.getHeader("X-Real-IP");
         }
 
@@ -35,16 +40,21 @@ public class SysLogServiceImpl implements SysLogService {
             ipAddress = request.getRemoteAddr();
         }
 
-        SysLog sysLog1 = new SysLog();
-        sysLog1.setUser(userRepository.findById(sysLog.getUserId()).get());
-        sysLog1.setStartTime(LocalDateTime.now());
-        sysLog1.setAction(sysLog.getAction());
-        sysLog1.setStatus(sysLog.getStatus());
-        sysLog1.setDescription(sysLog.getDescription());
-        sysLog1.setIpAddress(ipAddress);
-        return sysLogRepository.save(sysLog1);
+        SysLog sysLogEntry = new SysLog();
+        User userReference = userRepository.getReferenceById(sysLogEntry.getUser().getId());
+        sysLogEntry.setUser(userReference);
+        sysLogEntry.setStartTime(LocalDateTime.now());
+        sysLogEntry.setAction(sysLog.getAction());
+        sysLogEntry.setStatus(sysLog.getStatus());
+        sysLogEntry.setDescription(sysLog.getDescription());
+        sysLogEntry.setIpAddress(ipAddress);
+        try {
+            return sysLogRepository.save(sysLogEntry);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lưu SysLog: " + e.getMessage());
+            return null;
+        }
     }
-
     @Override
     public List<SysLogDTO> getSysLogByUser(Integer id) {
         return sysLogRepository.getSysLogByUserID(id);

@@ -9,11 +9,14 @@ import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
 import lms.doantotnghiep.dto.PdfDTO;
 import lms.doantotnghiep.dto.response.PdfResponse;
+import lms.doantotnghiep.dto.response.ScanResult;
 import lms.doantotnghiep.enums.AppException;
 import lms.doantotnghiep.enums.ErrorConstant;
 import lms.doantotnghiep.repository.CourseRepository;
 import lms.doantotnghiep.repository.EnrollmentRepository;
 import lms.doantotnghiep.repository.UserRepository;
+import lms.doantotnghiep.security.PDFSecurityScanner;
+import lms.doantotnghiep.security.PlainPdfScanner;
 import lms.doantotnghiep.service.EnrollmentService;
 import lms.doantotnghiep.service.PdfWatermarkService;
 import lms.doantotnghiep.service.upload.ImageService;
@@ -49,6 +52,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private PdfService pdfService;
     @Autowired
     private PdfWatermarkService pdfWatermarkService;
+    @Autowired
+    private PDFSecurityScanner pdfSecurityScanner;
+    @Autowired
+    private PlainPdfScanner plainPdfScanner;
     @Override
     public List<EnrollmentDTO> getAllEnrollments(Integer classId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -156,50 +163,69 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     public void addPDFInEnrollment(EnrollmentDTO enrollmentDTO, Integer userId) throws IOException {
         Optional<Enrollment> enrollment = enrollmentRepository.findById(enrollmentDTO.getEnrollId());
-        if (enrollment.isPresent()) {
-            Enrollment en = enrollment.get();
+        if (enrollment.isEmpty()) return;
 
-            if (enrollmentDTO.getPdfFiles() != null && !enrollmentDTO.getPdfFiles().isEmpty()) {
-                List<PdfDTO> pdfDtos = enrollmentDTO.getPdfFiles();
-                List<PdfDTO> savedPdfs = new ArrayList<>();
+        Enrollment en = enrollment.get();
 
-                for (PdfDTO pdfDto : pdfDtos) {
-                    String base64File = pdfDto.getPdfFile();
-                    if (base64File == null || base64File.trim().isEmpty()) {
-                        throw new AppException(ErrorConstant.FILE_ERROR);
-                    }
+        if (enrollmentDTO.getPdfFiles() != null && !enrollmentDTO.getPdfFiles().isEmpty()) {
+            List<PdfDTO> pdfDtos = enrollmentDTO.getPdfFiles();
+            List<PdfDTO> savedPdfs = new ArrayList<>();
 
-                    if (base64File.contains(",")) {
-                        base64File = base64File.split(",")[1];
-                    }
+            for (PdfDTO pdfDto : pdfDtos) {
+                String base64File = pdfDto.getPdfFile();
+                if (base64File == null || base64File.trim().isEmpty()) {
+                    throw new AppException(ErrorConstant.FILE_ERROR);
+                }
+                if (base64File.contains(",")) {
+                    base64File = base64File.split(",")[1];
+                }
+                base64File = base64File.replaceAll("\\s+", "");
 
-                    base64File = base64File.replaceAll("\\s+", "");
-                    byte[] pdfBytes = Base64.getDecoder().decode(base64File);
-                    ByteArrayInputStream pdfInput = new ByteArrayInputStream(pdfBytes);
-                    File watermarkedFile = pdfWatermarkService.addWatermark(pdfInput, userId);
-                    byte[] watermarkedBytes = Files.readAllBytes(watermarkedFile.toPath());
-                    String watermarkedBase64 = Base64.getEncoder().encodeToString(watermarkedBytes);
-                    watermarkedFile.delete();
-
-                    String publicId = pdfService.uploadPdfBytes(watermarkedBytes, pdfDto.getNameFile());
-
-                    PdfDTO savedPdf = new PdfDTO();
-                    savedPdf.setPdfFile(publicId);
-                    savedPdf.setNameFile(pdfDto.getNameFile());
-                    savedPdf.setCreatedAt(
-                            pdfDto.getCreatedAt() != null
-                                    ? pdfDto.getCreatedAt()
-                                    : Timestamp.valueOf(LocalDateTime.now())
-                    );
-
-                    savedPdfs.add(savedPdf);
+                byte[] pdfBytes;
+                try {
+                    pdfBytes = Base64.getDecoder().decode(base64File);
+                } catch (IllegalArgumentException e) {
+                    throw new AppException(ErrorConstant.FILE_ERROR);
+                }
+                if (!plainPdfScanner.hasPdfHeader(pdfBytes)) {
+                    throw new AppException(ErrorConstant.FILE_ERROR);
                 }
 
-                en.getPdfFiles().addAll(savedPdfs);
-                enrollmentRepository.save(en);
+                ScanResult scan = plainPdfScanner.scan(pdfBytes);
+                if (scan.isDangerous()) {
+                    throw new AppException(ErrorConstant.FILE_ERROR); // hoặc tạo ErrorConstant.PDF_DANGEROUS
+                }
+
+                ByteArrayInputStream pdfInput = new ByteArrayInputStream(pdfBytes);
+                File watermarkedFile = pdfWatermarkService.addWatermark(pdfInput, userId);
+
+                byte[] watermarkedBytes = Files.readAllBytes(watermarkedFile.toPath());
+                ScanResult postScan = plainPdfScanner.scan(watermarkedBytes);
+                if (postScan.isDangerous()) {
+                    watermarkedFile.delete();
+                    throw new AppException(ErrorConstant.FILE_ERROR);
+                }
+
+                String publicId = pdfService.uploadPdfBytes(watermarkedBytes, pdfDto.getNameFile());
+
+                watermarkedFile.delete();
+                PdfDTO savedPdf = new PdfDTO();
+                savedPdf.setPdfFile(publicId);
+                savedPdf.setNameFile(pdfDto.getNameFile());
+                savedPdf.setCreatedAt(
+                        pdfDto.getCreatedAt() != null
+                                ? pdfDto.getCreatedAt()
+                                : Timestamp.valueOf(LocalDateTime.now())
+                );
+
+                savedPdfs.add(savedPdf);
             }
+
+            en.getPdfFiles().addAll(savedPdfs);
+            enrollmentRepository.save(en);
         }
     }
+
 
 
 

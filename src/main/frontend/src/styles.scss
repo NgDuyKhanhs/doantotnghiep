@@ -1781,3 +1781,33 @@ section,
   color: #ffffff;
   font-style: normal;
 }
+/* Chặn chọn văn bản */
+html, body, .exam-root {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* Ẩn toàn bộ khi in */
+@media print {
+  body {
+    display: none !important;
+  }
+}
+
+/* Watermark răn đe chụp ảnh */
+.exam-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  color: rgba(0,0,0,0.1);
+  font-size: 24px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg,
+      transparent 0 30px,
+      rgba(0,0,0,0.05) 30px 60px);
+}

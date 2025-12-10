@@ -46,6 +46,11 @@ import { NewChaperComponent } from './chapter/new-chaper/new-chaper.component';
 import { AssignmentsComponent } from './detail-my-course/assignments/assignments.component';
 import { CreateAssignmentsComponent } from './modals/create-assignments/create-assignments.component';
 import { DoAssignmentsComponent } from './do-assignments/do-assignments.component';
+import {AntiCheatDirective} from "./anti-cheat.directive";
+import {SharedAntiCheatModule} from "./shared-anti-cheat.module";
+import {ListViolationComponent} from "./list-violation/list-violation.component";
+import {ListTeacherComponent} from "./list-teacher/list-teacher.component";
+import {DetailInfoComponent} from "./modals/detail-info/detail-info.component";
 @NgModule({
   declarations: [
     AppComponent,
@@ -73,7 +78,9 @@ import { DoAssignmentsComponent } from './do-assignments/do-assignments.componen
     AssignmentsComponent,
     CreateAssignmentsComponent,
     DoAssignmentsComponent,
-
+    ListViolationComponent,
+    ListTeacherComponent,
+    DetailInfoComponent
   ],
   imports: [
     BrowserModule,
@@ -93,7 +100,8 @@ import { DoAssignmentsComponent } from './do-assignments/do-assignments.componen
     RecaptchaFormsModule,
     Button,
     DatePipe,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SharedAntiCheatModule
   ],
   providers: [{provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true}, CookieService,provideToastr(),AuthGuard, provideAnimations(),MessageService, WebSocketService, ChatService, DatePipe],
   bootstrap: [AppComponent]

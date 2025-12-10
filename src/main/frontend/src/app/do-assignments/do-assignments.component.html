@@ -1,5 +1,7 @@
 <!-- do-assignments.component.html -->
-<div class="assignment-container">
+<p-toast></p-toast>
+<ngx-spinner type="ball-scale-multiple"></ngx-spinner>
+<div class="assignment-container" appAntiCheat>
 
   <!-- ========== HEADER VỚI TIMER ========== -->
   <div class="assignment-header">
@@ -31,13 +33,13 @@
   </div>
 
   <!-- ========== MAIN CONTENT ========== -->
-  <div class="container-fluid mt-4 pb-5">
+  <div class="container-fluid mt-4 pb-5 ">
     <div class="row">
 
       <!-- ========== SIDEBAR NAVIGATION ========== -->
-      <div class="col-lg-3 col-md-4">
-        <div class="question-nav card shadow-sm sticky-sidebar">
-          <div class="card-header bg-secondary text-white">
+      <div class="col-lg-3 col-md-4 ">
+        <div class="question-nav card shadow-sm sticky-sidebar rounded-0">
+          <div class="card-header bg-secondary text-white rounded-0">
             <h6 class="mb-0">
               <i class="bi bi-list-check"></i> Danh sách câu hỏi
             </h6>
@@ -80,31 +82,29 @@
         <!-- Nút nộp bài -->
         <button
           type="button"
-          class="btn btn-success w-100 mt-3 btn-lg shadow"
+          class="btn btn-success w-100 mt-2 btn-lg shadow rounded-0"
           (click)="openConfirmDialog()"
           [disabled]="isSubmitting"
         >
-          <i class="bi bi-send-check-fill"></i>
           {{ isSubmitting ? 'Đang nộp bài...' : 'Nộp bài' }}
         </button>
 
         <!-- Nút thoát -->
         <button
           type="button"
-          class="btn btn-outline-secondary w-100 mt-2"
+          class="btn btn-outline-secondary w-100 mt-2 rounded-0"
           (click)="exitAssignment()"
           [disabled]="isSubmitting"
-        >
-          <i class="bi bi-x-circle"></i> Thoát
+        >Thoát
         </button>
       </div>
 
       <!-- ========== MAIN QUESTION AREA ========== -->
       <div class="col-lg-9 col-md-8">
-        <div class="question-card card shadow">
+        <div class="question-card card shadow rounded-0">
 
           <!-- Card Header -->
-          <div class="card-header bg-gradient">
+          <div class="card-header bg-gradient rounded-0">
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="mb-0 text-white">
                 <i class="bi bi-patch-question"></i>
@@ -130,7 +130,6 @@
                 *ngFor="let choice of currentQuestion?.choices; let i = index"
                 class="choice-item"
                 [class.selected]="currentAnswer?.selectedChoiceId === choice.id"
-                (click)="selectAnswer(choice.id)"
               >
                 <!-- Radio Button -->
                 <div class="choice-radio">
@@ -139,8 +138,8 @@
                     [name]="'question-' + currentQuestion?.id"
                     [id]="'choice-' + choice.id"
                     [value]="choice.id"
-                    [checked]="currentAnswer?.selectedChoiceId === choice.id"
-                    (click)="selectAnswer(choice.id)"
+                    [(ngModel)]="currentAnswer.selectedChoiceId"
+                    (ngModelChange)="onAnswerChange(currentQuestion.id, $event)"
                   />
                 </div>
 
@@ -171,11 +170,11 @@
               <!-- Previous Button -->
               <button
                 type="button"
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary rounded-0"
                 (click)="previousQuestion()"
                 [disabled]="currentQuestionIndex === 0"
               >
-                <i class="bi bi-arrow-left"></i> Câu trước
+                <i class="bi bi-arrow-left"></i>
               </button>
 
               <!-- Question Counter -->
@@ -186,11 +185,11 @@
               <!-- Next Button -->
               <button
                 type="button"
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary rounded-0"
                 (click)="nextQuestion()"
                 [disabled]="currentQuestionIndex === assignment?.questions?.length - 1"
               >
-                Câu sau <i class="bi bi-arrow-right"></i>
+                <i class="bi bi-arrow-right"></i>
               </button>
             </div>
           </div>
@@ -210,13 +209,13 @@
     <div class="modal-content">
 
       <!-- Modal Header -->
-      <div class="modal-header bg-success text-white">
+      <div class="modal-header bg-success text-white rounded-0">
         <h5 class="modal-title">
-          <i class="bi bi-send-check"></i> Xác nhận nộp bài
+          Xác nhận nộp bài
         </h5>
         <button
           type="button"
-          class="btn-close btn-close-white"
+          class="btn-close btn-close-white rounded-0"
           (click)="closeConfirmDialog()"
           [disabled]="isSubmitting">
         </button>
@@ -254,17 +253,16 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
+          class="btn btn-secondary rounded-0"
           (click)="closeConfirmDialog()"
           [disabled]="isSubmitting">
-          <i class="bi bi-x-circle"></i> Hủy
+         Hủy
         </button>
         <button
           type="button"
-          class="btn btn-success"
+          class="btn btn-success rounded-0"
           (click)="submitAssignment()"
           [disabled]="isSubmitting">
-          <i class="bi bi-check-circle"></i>
           {{ isSubmitting ? 'Đang nộp...' : 'Xác nhận nộp bài' }}
         </button>
       </div>
@@ -278,10 +276,3 @@
      *ngIf="showConfirmDialog">
 </div>
 
-<!-- ========== LOADING OVERLAY ========== -->
-<div class="loading-overlay" *ngIf="isSubmitting">
-  <div class="spinner-border text-light" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-  <p class="text-white mt-3">Đang nộp bài...</p>
-</div>

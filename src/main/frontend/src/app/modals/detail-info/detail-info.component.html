@@ -1,0 +1,109 @@
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<div class="content">
+  <div class="card">
+    <i class="bi bi-x" style="position: absolute; right: 10px; top: 10px;font-size: 20px" (click)="activeModal.close()"></i>
+    <div class="firstinfo"><img src="{{user.avatar}}" />
+      <div class="profileinfo">
+        <h1>{{user.fullname}}</h1>
+        <small>{{user.roleName}}</small>
+        <p class="bio">{{user.email}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<div class="container" *ngIf="user.roleName == 'ROLE_TEACHER'">
+  <div class="row">
+    <div class="col-12" style="padding:0">
+      <div class="overflow-hidden card table-nowrap table-card">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="small text-uppercase bg-body text-muted">
+            <tr>
+              <th>Tên môn</th>
+              <th>Số tín</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody *ngIf="user.courseDTOS.length > 0">
+            <tr class="align-middle" *ngFor="let c of user.courseDTOS; let i = index">
+              <td>{{c.name}}</td>
+              <td> <span class="d-inline-block align-middle">{{c.credits}}</span></td>
+              <td class="text-end position-relative">
+                <img
+                  width="30px"
+                  src="https://www.svgrepo.com/show/332603/user-switch.svg"
+                  (click)="togglePopup(i, $event)"
+                  style="cursor: pointer;"
+                  #iconRef
+                />
+                <!-- Custom Popup -->
+                <div
+                  *ngIf="showPopup === i"
+                  class="custom-popup"
+                  style="position: absolute; top: 50%; right: 50px; transform: translateY(-50%);z-index: 1000; min-width: 200px;"
+                >
+                  <div class="popup-content bg-white border rounded shadow p-2">
+                    <div class="teacher-list">
+                      <div *ngFor="let t of teachers; let i = index; let last = last"
+                           [ngClass]="{'teacher-item': true, 'd-flex': true, 'align-items-center': true, 'border-bottom': !last}">
+                          <div class="teacher-name">{{t.fullname}}</div>
+                      </div>
+                      <div *ngIf="teachers.length === 0" class="text-center text-muted py-2">
+                        Chưa có giảng viên nào
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+            <tbody *ngIf="user.courseDTOS.length == 0" >
+            <div style="text-align: center; margin: 20px 0;width: 100%;display: flex">Đang trống khóa dạy</div>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay để đóng popup khi click bên ngoài -->
+<div
+  *ngIf="showPopup !== null"
+  class="popup-overlay"
+  (click)="closePopup()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999; background: transparent;"
+>
+</div>
+
+<div class="container" *ngIf="user.roleName == 'ROLE_USER'">
+  <div class="row">
+    <div class="col-12" style="padding:0">
+      <div class="overflow-hidden card table-nowrap table-card">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="small text-uppercase bg-body text-muted">
+            <tr>
+              <th>Bài tập</th>
+              <th>Ngày vi phạm</th>
+              <th>Kiểu vi phạm</th>
+              <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody *ngIf="user.violationReports.length > 0">
+            <tr class="align-middle" *ngFor="let c of user.violationReports; let i = index">
+              <td>{{c.title}}</td>
+              <td> <span class="d-inline-block align-middle">{{c.createdAt | date:'dd/MM/yyyy' }}</span></td>
+              <td>{{getViolationLabel(c.typeViolation)}}</td>
+              <td style="color: red; font-size: 25px; text-align: center"><i class="bi bi-sort-numeric-down-alt"></i></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
