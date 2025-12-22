@@ -24,11 +24,13 @@ public interface UserService {
     List<Class> getAllClasses();
     //Admin
     List<UserDTO> getAllTeachers();
-    void uploadEnrollment(EnrollmentDTO enrollmentDTO);
+    void uploadEnrollment(int id,EnrollmentDTO enrollmentDTO,HttpServletRequest request);
     List<UserDTO> getAllStudents(String className);
     UserDTO getUserByID(Integer id);
     UserDTO getMoreDetailsUser(Integer id);
     List<UserDTO> getListUserFromEnrollment(Integer enrollId);
 
     void swapCourseForUser(Integer courseID, Integer id);
+
+    void decreaseScore(Integer id, Double score, String email);
 }

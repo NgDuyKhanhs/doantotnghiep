@@ -117,7 +117,7 @@ public class PdfService {
         try {
             ZonedDateTime vietnamTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
             // 10 phút
-            long expirationTimestamp = vietnamTime.toEpochSecond() + 600; //
+            long expirationTimestamp = vietnamTime.toEpochSecond() + 60; //
             return cloudinary.privateDownload(
                     publicId,
                     "pdf",

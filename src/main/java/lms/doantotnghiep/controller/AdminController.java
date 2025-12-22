@@ -1,10 +1,12 @@
 package lms.doantotnghiep.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
 import lms.doantotnghiep.dto.UserDTO;
 import lms.doantotnghiep.dto.request.UploadEnrollmentReq;
 import lms.doantotnghiep.enums.AppException;
+import lms.doantotnghiep.repository.SubmissionRepository;
 import lms.doantotnghiep.service.CurriculumService;
 import lms.doantotnghiep.service.EnrollmentService;
 import lms.doantotnghiep.service.UserService;
@@ -33,6 +35,8 @@ public class AdminController {
 
     @Autowired
     private CurriculumService curriculumService;
+    @Autowired
+    private SubmissionRepository submissionRepository;
 
     @GetMapping("/get-list-teacher")
     public ResponseEntity<?> getListTeachers(Authentication authentication) {
@@ -65,11 +69,11 @@ public class AdminController {
     }
 
     @PostMapping("/upload-enrollment")
-    public ResponseEntity<?> uploadEnrollment(@RequestBody EnrollmentDTO enrollmentDTO, Authentication authentication) {
+    public ResponseEntity<?> uploadEnrollment(@RequestBody EnrollmentDTO enrollmentDTO, Authentication authentication, HttpServletRequest request) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             try {
-                userService.uploadEnrollment(enrollmentDTO);
+                userService.uploadEnrollment(userDetailsImple.getId(),enrollmentDTO,request);
                 return ResponseEntity.ok().body(Map.of(
                         "success", true,
                         "message", "Tạo khóa học thành công"
@@ -99,11 +103,11 @@ public class AdminController {
     }
 
     @PostMapping("/upload-course")
-    public ResponseEntity<?> uploadCourse(@RequestBody CourseDTO courseDTO, Authentication authentication) {
+    public ResponseEntity<?> uploadCourse(@RequestBody CourseDTO courseDTO, Authentication authentication,HttpServletRequest request) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             try {
-                curriculumService.createCurriculum(courseDTO);
+                curriculumService.createCurriculum(userDetailsImple.getId(),request,courseDTO);
                 return ResponseEntity.ok().body(Map.of(
                         "success", true,
                         "message", "Tạo khóa học thành công"
@@ -145,5 +149,19 @@ public class AdminController {
                 ));
             }
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @PostMapping("/decrease-score")
+    ResponseEntity<?> decreaseScore(@RequestParam Integer id, Authentication authentication, @RequestParam Double score, @RequestParam String email) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            userService.decreaseScore(id, score, email);
+            return ResponseEntity.ok().body(Map.of(
+                    "success", true,
+                    "message", "Hạ điểm thành công"));
+        }
+        return ResponseEntity.ok().body(Map.of(
+                "success", true,
+                "message", "Lỗi"));
     }
 }

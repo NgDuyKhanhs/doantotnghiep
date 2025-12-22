@@ -18,5 +18,5 @@ public class ViolationReportDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Timestamp createdAt;
     private String typeViolation;
-
+    private double score;
 }

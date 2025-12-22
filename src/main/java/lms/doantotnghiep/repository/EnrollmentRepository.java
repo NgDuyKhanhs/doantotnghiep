@@ -51,9 +51,9 @@ public interface EnrollmentRepository extends CrudRepository<Enrollment, Integer
     @Query(value = "SELECT CASE WHEN EXISTS ( " +
             "    SELECT 1 " +
             "    FROM enrollmenttbl e " +
-            "    JOIN enrollment_pdf_files p ON e.enrollid = p.enrollid " +
-            "    JOIN enrollmentusertbl eu  ON e.enrollid = eu.enrollid " +
-            "    JOIN coursetbl c ON c.course_id = e.course_id " +
+            "   LEFT JOIN enrollment_pdf_files p ON e.enrollid = p.enrollid " +
+            "   LEFT JOIN enrollmentusertbl eu  ON e.enrollid = eu.enrollid " +
+            "   LEFT JOIN coursetbl c ON c.course_id = e.course_id " +
             "    WHERE ( " +
             "        (eu.userid = ?1 AND p.pdf_url = ?2) " +
             "        OR (c.user_id = ?1 AND p.pdf_url = ?2) " +

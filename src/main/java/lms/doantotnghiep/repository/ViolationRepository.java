@@ -21,6 +21,6 @@ public interface ViolationRepository extends CrudRepository<ViolationReport, Int
             "            ORDER BY v.created_at DESC", nativeQuery = true)
     List<ViolationReport> findByUserIdAndAssignmentId(int userId, int assignmentId);
 
-    @Query(value = "select a.title, v.created_at, v.type_violation from violationtbl v join assignmenttbl a on v.assignment_id = a.assignment_id where v.user_id = ?1", nativeQuery = true)
+    @Query(value = "select distinct a.title, v.created_at, v.type_violation, s.score from violationtbl v join assignmenttbl a on v.assignment_id = a.assignment_id join submissiontbl s on s.assignment_id = a.assignment_id and v.user_id = s.user_id where v.user_id = ?1", nativeQuery = true)
     List<ViolationReportDTO> findByUserId(int userId);
 }

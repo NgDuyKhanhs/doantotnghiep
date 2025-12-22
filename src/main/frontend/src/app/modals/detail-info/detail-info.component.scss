@@ -164,3 +164,46 @@ table th {
 .position-relative {
   position: relative ! important;
 }
+/* nền xám khi marked */
+.row-marked {
+  background-color: #f2f2f2; /* xám nhạt */
+}
+
+/* style cho cell actions */
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+/* nút icon trống */
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* undo small */
+.undo-btn {
+  background: transparent;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+/* save & cancel: tùy chỉnh nhỏ */
+.save-btn {
+  min-width: 36px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cancel-btn {
+  min-width: 36px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}

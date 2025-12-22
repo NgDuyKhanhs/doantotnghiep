@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.*;
 
 @Service
@@ -76,6 +77,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ViolationRepository violationRepository;
+
+    @Autowired
+    private SubmissionRepository submissionRepository;
 
     @Override
     public void register(UserDTO userDTO) {
@@ -272,11 +276,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void uploadEnrollment(EnrollmentDTO enrollmentDTO) {
+    public void uploadEnrollment(int id,EnrollmentDTO enrollmentDTO, HttpServletRequest request) {
         if (enrollmentDTO == null) {
             throw new AppException(ErrorConstant.INVALID_ENROLLMENT_DTO);
         }
-
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
         Course course = courseRepository.findById(enrollmentDTO.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorConstant.COURSE_NOT_FOUND));
 
@@ -309,6 +315,15 @@ public class UserServiceImpl implements UserService {
         enrollment.setCourse(course);
         enrollment.setRegistered(0);
         enrollment.setLockWhenFull(enrollmentDTO.isLockWhenFull());
+        SysLog sysLog = new SysLog();
+        User user = userRepository.findById(id).get();
+        sysLog.setUser(user);
+        sysLog.setAction("Tạo khóa học");
+        sysLog.setNameDevice(deviceName);
+        sysLog.setStartTime(LocalDateTime.now());
+        sysLog.setIpAddress(currentIp);
+        sysLog.setStatus(0);
+        sysLogRepository.save(sysLog);
         enrollmentRepository.save(enrollment);
     }
 
@@ -399,6 +414,21 @@ public class UserServiceImpl implements UserService {
 
         existingCourse.setTeacher(newTeacher);
         courseRepository.save(existingCourse);
+    }
+
+    @Override
+    public void decreaseScore(Integer id, Double score, String email) {
+        Optional<ViolationReport> violationReportOptional = violationRepository.findById(id);
+        Submission submission = new Submission();
+        if (violationReportOptional.isPresent()) {
+            ViolationReport violationReport = violationReportOptional.get();
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isPresent()) {
+                 submission = submissionRepository.findByAssIDAndUserId(violationReport.getAssignment().getId(),user.get().getId());
+            }
+            submission.setScore(score);
+            submissionRepository.save(submission);
+        }
     }
 
     public static void setParams(Query query, Map<String, Object> params) {

@@ -39,4 +39,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Integer>
             "            ORDER BY s.start_time DESC", nativeQuery = true)
     List<Submission> findByAssignmentIdAndStatus( int assignmentId,String status);
 
+    @Query(value = "select * from submissiontbl where assignment_id = ?1 and user_id = ?2", nativeQuery = true)
+    Submission findByAssIDAndUserId(int id, int userId);
+
 }

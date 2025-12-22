@@ -10,19 +10,19 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Trang chủ' }" (click)="selectTab('Trang chủ')" routerLink="trang-chu" routerLinkActive="active">Trang chủ</a></li>
+        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER' && showNavbar" [ngClass]="{ active: selectedTab === 'Trang chủ' }" (click)="selectTab('Trang chủ')" routerLink="trang-chu" routerLinkActive="active" >Trang chủ</a></li>
 <!--        <li><a class="nav-link" *ngIf="token.getRoleFromToken() == 'ROLE_USER'" [ngClass]="{ active: selectedTab === 'Thời khóa biểu' }" (click)="selectTab('Thời khóa biểu')" routerLink="thoi-khoa-bieu" routerLinkActive="active">Thời khóa biểu</a></li>-->
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
-    <a *ngIf="!authService.authenticated()" style="text-decoration: none" class="nav-link btn-getstarted" routerLink="dang-nhap" routerLinkActive="active">Đăng nhập</a>
-    <a *ngIf="authService.authenticated()" style="text-decoration: none" class="nav-link profile" [ngClass]="{ active: selectedTab === 'profile' }" (click)="selectTab('profile')" routerLink="thong-tin-ca-nhan" routerLinkActive="active"><i class="bi bi-person-circle"></i></a>
+    <a *ngIf="!authService.authenticated() && showNavbar" style="text-decoration: none" class="nav-link btn-getstarted" routerLink="dang-nhap" routerLinkActive="active">Đăng nhập</a>
+    <a *ngIf="authService.authenticated() && showNavbar" style="text-decoration: none" class="nav-link profile" [ngClass]="{ active: selectedTab === 'profile' }" (click)="selectTab('profile')" routerLink="thong-tin-ca-nhan" routerLinkActive="active"><i class="bi bi-person-circle"></i></a>
   </div>
 </header>
 
 
 <div class="layout-container" [ngClass]="{ 'sidebar-open': sidebarOpen, 'sidebar-closed': !sidebarOpen }">
-  <app-navbar class="navbar" (toggleSidebar1)="toggleSidebar()"></app-navbar>
+  <app-navbar class="navbar" *ngIf="showNavbar" (toggleSidebar1)="toggleSidebar()"></app-navbar>
 
   <div class="content">
     <router-outlet></router-outlet>

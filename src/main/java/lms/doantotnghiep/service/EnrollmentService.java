@@ -1,5 +1,6 @@
 package lms.doantotnghiep.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
 import lms.doantotnghiep.dto.PdfDTO;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface EnrollmentService {
     List<EnrollmentDTO> getAllEnrollments(Integer classId);
 
-    void registerEnrollment(List<Integer> enrollIds);
+    void registerEnrollment(List<Integer> enrollIds, HttpServletRequest request);
 
     List<EnrollmentDTO> getEnrollmentFilter(String type, Integer userId, String currentRole);
 

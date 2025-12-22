@@ -1,5 +1,6 @@
 package lms.doantotnghiep.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.Assignment;
 import lms.doantotnghiep.dto.*;
 import lms.doantotnghiep.dto.request.AnswersJson;
@@ -67,11 +68,11 @@ public class TeacherController {
     }
 
     @PostMapping("/upload-assignment")
-    public ResponseEntity<?> uploadAssignments(@RequestBody CreateAssignmentDTO dto, Authentication authentication) {
+    public ResponseEntity<?> uploadAssignments(@RequestBody CreateAssignmentDTO dto, Authentication authentication,HttpServletRequest request) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         if (userDetailsImple != null && userDetailsImple.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_TEACHER"))) {
             try {
-                AssignmentDTO result = assignmentService.createAssignment(dto);
+                AssignmentDTO result = assignmentService.createAssignment(userDetailsImple.getId(),dto,request);
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -120,12 +121,12 @@ public class TeacherController {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<?> startExam(@RequestParam int assignmentId, @RequestParam ActionType actionType, @RequestBody(required = false) List<AnswersJson> answersJsons, Authentication authentication) {
+    public ResponseEntity<?> startExam(@RequestParam int assignmentId, @RequestParam ActionType actionType, @RequestBody(required = false) List<AnswersJson> answersJsons, Authentication authentication,HttpServletRequest request) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         if (userDetailsImple != null) {
             if (answersJsons == null) answersJsons = new ArrayList<>();
 
-            ExamSession session = assignmentService.startExam(userDetailsImple.getId(), assignmentId, answersJsons, actionType);
+            ExamSession session = assignmentService.startExam(userDetailsImple.getId(), assignmentId, answersJsons, actionType, request);
             return ResponseEntity.ok(session);
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 

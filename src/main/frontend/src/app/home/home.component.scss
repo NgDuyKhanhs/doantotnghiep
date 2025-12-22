@@ -1,38 +1,307 @@
-
-
-/* Main content */
 .main-content {
-  padding: 1.5rem;
+  padding:  2rem;
   background-color: #f5f7fa;
-  width: 100%
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.header {
+// ============ PHIÊN ĐANG LÀM BÀI TẬP ============
+.active-session {
+  margin-bottom: 2.5rem;
+}
+
+.session-card {
+  background: linear-gradient(135deg, #ea6666 0%, rgba(236, 143, 143, 0.65) 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow:  0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.session-info-left {
+  flex: 1;
+}
+
+.session-heading {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight:  700;
+}
+
+.session-subject {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.95;
+  font-size: 1rem;
+}
+
+.btn-continue {
+  background-color: white;
+  color: #667eea;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius:  10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+}
+
+.session-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.4;
+}
+
+.session-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap:  0.5rem;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-label {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.progress-bar {
+  height: 10px;
+  background-color:  rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: white;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+// ============ DANH SÁCH BÀI TẬP CHƯA LÀM ============
+.assignments-section {
+  padding: 20px;
+  margin-top: 0;
+}
+
+.section-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin:  0 0 1.5rem 0;
+}
+
+.assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assignment-card {
+  background-color: white;
+  padding:  1.5rem;
+  border-radius: 12px;
+  box-shadow:  0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+  }
+}
+
+.assignment-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.assignment-info {
+  flex: 1;
+}
+
+.assignment-title {
+  font-size: 1.15rem;
+  font-weight:  600;
+  color: #2d3748;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.assignment-subject {
+  margin: 0;
+  color: #718096;
+  font-size:  0.95rem;
+}
+
+.due-badge {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding:  0.4rem 1rem;
+  border-radius:  20px;
+  font-size:  0.875rem;
+  font-weight:  600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.urgent {
+    background-color: #fed7d7;
+    color:  #c53030;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity:  1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.assignment-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
+.due-date-full {
+  color: #718096;
+  font-size: 0.9rem;
+}
 
-//.card {
-//  background-color: #ffffff;
-//  padding: 1rem;
-//  border-radius: 12px;
-//  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-//}
+.btn-start {
+  background-color: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.5rem 1.25rem;
+  border-radius:  8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 
-.calendar-box {
-  background-color: #f5f7fa;
-  padding: 1rem;
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ============ EMPTY STATE ============
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
   border-radius: 12px;
 }
-.calendar {
-  padding: 0;
-  margin: 10px 0;
-  margin-top: 40px
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom:  1rem;
 }
-h3{
-  padding: 0;
-  margin: 0;
+
+.empty-message {
+  font-size: 1.2rem;
+  color: #718096;
+  margin:  0;
+}
+
+// ============ RESPONSIVE ============
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1.25rem;
+  }
+
+  .session-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-continue {
+    width: 100%;
+  }
+
+  .session-stats {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .assignment-main {
+    flex-direction: column;
+  }
+
+  .due-badge {
+    align-self: flex-start;
+  }
+
+  .assignment-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .btn-start {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 1rem;
+  }
+
+  .session-card {
+    padding: 1.5rem;
+  }
+
+  .session-heading {
+    font-size: 1.1rem;
+  }
+
+  .session-title {
+    font-size: 1.25rem;
+  }
+
+  .section-heading {
+    font-size: 1.3rem;
+  }
+
+  .assignment-title {
+    font-size: 1.05rem;
+  }
 }

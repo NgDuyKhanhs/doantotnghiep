@@ -34,6 +34,7 @@ public enum ErrorConstant {
     INVALID_TIME_RANGE(16, "Thời gian bắt đầu phải trước thời gian kết thúc", HttpStatus.BAD_REQUEST),
     INVALID_AVAILABLE(17, "Số lượng chỗ còn lại phải lớn hơn 0", HttpStatus.BAD_REQUEST),
     DUPLICATE_ENROLLMENT(18, "Khóa học đã tồn tại", HttpStatus.BAD_REQUEST),
+    PDF_DANGEROUS(18, "File chứa mã độc không thể tải lên", HttpStatus.BAD_REQUEST),
     PERMISSION_DENIED(18, "Người dùng không có quyền truy cập", HttpStatus.BAD_REQUEST);
     ErrorConstant(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

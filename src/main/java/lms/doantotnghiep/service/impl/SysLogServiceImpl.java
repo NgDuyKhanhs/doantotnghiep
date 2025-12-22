@@ -41,7 +41,7 @@ public class SysLogServiceImpl implements SysLogService {
         }
 
         SysLog sysLogEntry = new SysLog();
-        User userReference = userRepository.getReferenceById(sysLogEntry.getUser().getId());
+        User userReference = userRepository.getReferenceById(sysLog.getUserId());
         sysLogEntry.setUser(userReference);
         sysLogEntry.setStartTime(LocalDateTime.now());
         sysLogEntry.setAction(sysLog.getAction());

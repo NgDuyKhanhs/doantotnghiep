@@ -31,5 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
-# Secret config
+
+### Secret config ###
+# Ignore secret file everywhere
 application-secret.properties
+**/application-secret.properties
+
+# Keep example files tracked
+!application-secret.example.properties
+!**/application-secret.example.properties

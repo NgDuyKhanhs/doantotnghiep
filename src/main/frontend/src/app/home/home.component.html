@@ -1,34 +1,37 @@
+<main class="main-content">
 
-  <main class="main-content">
-    <section class="calendar">
-      <h3  style="background-color: #f5f7fa;">Lịch học</h3>
-      <div class="calendar-box">
-        <p>📅 Thứ 2: Toán cao cấp</p>
-        <p>📅 Thứ 5: Thi lập trình C++</p>
-      </div>
-    </section>
-<!--    <header class="header">-->
-<!--      <div class="greeting">Chào bạn</div>-->
-<!--      <div class="date"></div>-->
-<!--    </header>-->
 
-    <div class=" row g-2">
-      <div class="col-lg-4 col-md-3 col-sm-6">
-        <div class="card h-100 p-3 shadow-sm">
-          <strong>📘 Kỳ học hiện tại</strong><br />4 môn đang học
+
+  <section class="assignments-section">
+    <h3 class="section-heading">Bài tập chưa làm</h3>
+
+    <div class="assignments-list" *ngIf="pendingAssignments.length > 0">
+      <div class="assignment-card" *ngFor="let assignment of pendingAssignments">
+        <div class="assignment-main">
+          <div class="assignment-info">
+            <h4 class="assignment-title">{{ assignment.title }}</h4>
+            <p class="assignment-subject">{{ assignment.subject }}</p>
+          </div>
+          <span class="due-badge" [class.urgent]="isUrgent(assignment.endTime)">
+            {{ formatDueDate(assignment.endTime) }}
+          </span>
+        </div>
+
+        <div class="assignment-footer">
+          <span class="due-date-full">
+            📅 Hạn nộp: {{ assignment.endTime | date:  'dd/MM/yyyy' }}
+          </span>
+          <button class="btn-start" (click)="startAssignment(assignment, assignment.id, assignment.enrollId)">
+            Bắt đầu làm
+          </button>
         </div>
       </div>
-      <div class="col-lg-4 col-md-3 col-sm-6">
-        <div class="card h-100 p-3 shadow-sm">
-          <strong>⏰ Bài tập</strong><br />2 bài sắp đến hạn
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-3 col-sm-6">
-        <div class="card h-100 p-3 shadow-sm">
-          <strong>🗓️ Lịch</strong><br />1 bài thi hôm nay
-        </div>
-      </div>
-
     </div>
-  </main>
 
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="pendingAssignments.length === 0">
+      <p class="empty-message">Bạn đã hoàn thành tất cả bài tập</p>
+    </div>
+  </section>
+
+</main>

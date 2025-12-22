@@ -339,15 +339,9 @@ export class DoAssignmentsComponent implements OnInit, OnDestroy{
     return this.answers.filter(a => a.selectedChoiceId !== null).length;
   }
 
-  openConfirmDialog(): void {
-    const unanswered = this.assignment.questions.length - this.getAnsweredCount();
-    if (unanswered > 0) {
-      const confirm = window.confirm(
-        `Bạn còn ${unanswered} câu chưa trả lời.\nBạn có chắc chắn muốn nộp bài?`
-      );
-      if (!confirm) return;
-    }
+  async openConfirmDialog() {
     this.showConfirmDialog = true;
+
   }
 
   closeConfirmDialog(): void {
@@ -357,13 +351,17 @@ export class DoAssignmentsComponent implements OnInit, OnDestroy{
   submitAssignment(): void {
     this.isSubmitting = true;
     this.stopTimer();
-    this.spinner.show()
-    this.userService.submitAssignment(this.assignment.id,this.answers).subscribe({
+    this.spinner.show();
+    this.userService.submitAssignment(this.assignment.id, this.answers).subscribe({
       next: (response) => {
         this.notify.showSuccess('Nộp bài thành công!');
-        setTimeout(() => {
-          this.router.navigate(['/danh-sach-hoc-phan-hien-tai']);
-          this.spinner.hide()
+        setTimeout(async () => {
+          await this.router.navigate(['/danh-sach-hoc-phan-hien-tai']);
+          await this.spinner.hide();
+          try {
+            await document.exitFullscreen();
+          } catch (e) {
+          }
         }, 1000);
       },
       error: (error) => {
@@ -373,21 +371,6 @@ export class DoAssignmentsComponent implements OnInit, OnDestroy{
       }
     });
   }
-
-  exitAssignment(): void {
-    const answered = this.getAnsweredCount();
-    if (answered > 0) {
-      const confirm = window.confirm(
-        'Bạn có chắc chắn muốn thoát?'
-      );
-      if (!confirm) return;
-    }
-
-    this.stopTimer();
-    this.router.navigate(['/chi-tiet-khoa-hoc', 'bai-tap']);
-  }
-
-
   private dedupeAnswers() {
     const map = new Map<number, any>();
     for (const a of this.answers) {

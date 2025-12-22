@@ -5,19 +5,24 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 @Component
 public class PlainPdfScanner {
 
-    // Các token nguy hiểm phổ biến (case-insensitive)
-    private static final String[] DANGEROUS_TOKENS = new String[] {
-            "/JS", "/JavaScript", "/OpenAction", "/AA",
+    private static final String[] IMMEDIATE_DANGEROUS_TOKENS = new String[] {
+            "/JS", "/JavaScript", "/OpenAction",
             "/EmbeddedFiles", "/Names/EmbeddedFiles",
             "/RichMedia", "/Launch", "/XFA",
-            "/Encrypt" // PDF có mã hóa: có thể chứa nội dung khó kiểm soát
+            "/Encrypt"
     };
+
+    private static final String[] AA_CONTEXT_TOKENS = new String[] {
+            "/javascript", "/js", "/launch", "/openaction", "/uri", "/s /javascript"
+    };
+
 
     private static final Pattern PDF_HEADER = Pattern.compile("^%PDF-", Pattern.CASE_INSENSITIVE);
 
@@ -31,42 +36,95 @@ public class PlainPdfScanner {
     public ScanResult scan(byte[] bytes) {
         ScanResult result = new ScanResult();
 
-        // 1) Chuẩn hóa: cắt đầu cuối \0 để tránh rác; không cần decode toàn bộ nếu file rất lớn
-        // Đơn giản: tạo một chuỗi lowercase từ tối đa N MB đầu (ví dụ 5MB) để tìm token
-        int window = Math.min(bytes.length, 5 * 1024 * 1024);
-        String textLower = new String(bytes, 0, window, StandardCharsets.ISO_8859_1).toLowerCase(Locale.ROOT);
+        if (bytes == null) {
+            result.addReason("Input is null");
+            return result;
+        }
+        if (bytes.length == 0) {
+            result.addReason("Empty file");
+            return result;
+        }
 
-        // 2) Tìm token nguy hiểm
-        for (String token : DANGEROUS_TOKENS) {
+        int maxWindow = Math.min(bytes.length, 5 * 1024 * 1024);
+        String textLower;
+        try {
+            String text = new String(bytes, 0, maxWindow, StandardCharsets.ISO_8859_1);
+            int trimEnd = text.length();
+            while (trimEnd > 0 && (text.charAt(trimEnd - 1) == '\0' || Character.isWhitespace(text.charAt(trimEnd - 1)))) {
+                trimEnd--;
+            }
+            if (trimEnd != text.length()) {
+                text = text.substring(0, trimEnd);
+            }
+            textLower = text.toLowerCase(Locale.ROOT);
+        } catch (Exception e) {
+            result.addReason("Failed to decode bytes: " + e.getMessage());
+            return result;
+        }
+
+        // 1) Các token gây nguy hiểm xử lý như trước
+        for (String token : IMMEDIATE_DANGEROUS_TOKENS) {
             if (textLower.contains(token.toLowerCase(Locale.ROOT))) {
                 result.addReason("Found token: " + token);
                 result.addDetail(token, "present");
             }
         }
 
-        // 3) Phát hiện object streams (có thể chứa JS/Actions) - chỉ đánh dấu thông tin
-        int objCount = countOccurrences(textLower, "obj");
-        int streamCount = countOccurrences(textLower, "stream");
+        // 2) Xử lý /AA theo ngữ cảnh — không block nếu không phát hiện hành động thực thi
+        String aaToken = "/aa";
+        int idx = textLower.indexOf(aaToken);
+        boolean aaFound = false;
+        boolean aaContextDanger = false;
+        while (idx >= 0) {
+            aaFound = true;
+            // lấy vùng ngữ cảnh quanh /AA (ví dụ 2 KB trước và sau)
+            int ctxRadius = 2048;
+            int start = Math.max(0, idx - ctxRadius);
+            int end = Math.min(textLower.length(), idx + aaToken.length() + ctxRadius);
+            String ctx = textLower.substring(start, end);
+
+            // tìm token nguy hiểm trong vùng ngữ cảnh
+            for (String ctxTok : AA_CONTEXT_TOKENS) {
+                if (ctx.contains(ctxTok)) {
+                    aaContextDanger = true;
+                    result.addReason("Found /AA with dangerous action in context: " + ctxTok);
+                    result.addDetail("/AA", "context:" + ctxTok);
+                    break;
+                }
+            }
+            if (!aaContextDanger) {
+                // không thấy action nguy hiểm trong vùng quanh lần xuất hiện này
+                // chỉ ghi detail (không addReason), để giảm false-positive
+                result.addDetail("/AA", "present_no_action_detected");
+            } else {
+                // nếu đã phát hiện context nguy hiểm, ta có thể dừng (hoặc continue để tìm thêm)
+                // break; // comment nếu muốn tìm nhiều instance
+            }
+
+            idx = textLower.indexOf(aaToken, idx + aaToken.length());
+        }
+
+        if (!aaFound) {
+            result.addDetail("/AA", "absent");
+        }
+
+        // 3) Phát hiện object/stream
+        int objCount = countRegexOccurrences(textLower, "(?m)\\b\\d+\\s+\\d+\\s+obj\\b");
+        int streamCount = countRegexOccurrences(textLower, "(?m)\\bstream\\b");
         result.addDetail("objects", String.valueOf(objCount));
         result.addDetail("streams", String.valueOf(streamCount));
+        if (objCount == 0) {
+            objCount = countRegexOccurrences(textLower, "\\bobj\\b");
+            result.addDetail("objects_fallback", String.valueOf(objCount));
+        }
 
-        // 4) Kiểm tra dấu hiệu form XFA/AcroForm
+        // 4) AcroForm/XFA detection
         if (textLower.contains("/acroform")) {
             result.addDetail("AcroForm", "present");
+            result.addReason("Contains AcroForm (potential interactive form)");
         }
 
-        // 5) Kiểm tra nếu có hành động mở tài liệu (OpenAction) hoặc Additional Actions (AA) đã đánh dấu ở trên
-        // 6) Nếu phát hiện /Encrypt: coi là nguy hiểm (tùy policy)
-        if (textLower.contains("/encrypt")) {
-            result.addReason("Encrypted PDF");
-            result.addDetail("Encrypt", "present");
-        }
-
-        // 7) Kiểm tra sự hiện diện của các ký hiệu JavaScript theo pattern đơn giản
-        // Tìm (JS) hoặc (JavaScript) trong phần dictionaries/objects
-        // Dùng heuristics: nếu có /JavaScript hoặc /JS -> đánh dấu nguy hiểm (done ở 2)
-
-        // 8) Kịch bản né tránh: nếu dữ liệu chủ yếu binary và hầu như không có từ khóa PDF, thêm cảnh báo
+        // 5) Heuristic obfuscation check
         int pdfKeywordScore = keywordScore(textLower);
         result.addDetail("keyword_score", String.valueOf(pdfKeywordScore));
         if (pdfKeywordScore < 2) {
@@ -75,6 +133,18 @@ public class PlainPdfScanner {
         }
 
         return result;
+    }
+
+    private int countRegexOccurrences(String text, String regex) {
+        try {
+            Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            Matcher m = p.matcher(text);
+            int count = 0;
+            while (m.find()) count++;
+            return count;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private int countOccurrences(String haystack, String needle) {

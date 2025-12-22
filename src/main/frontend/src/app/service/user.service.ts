@@ -1,21 +1,24 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {Router} from "@angular/router";
 import {CookieService} from "ngx-cookie-service";
 import {Observable} from "rxjs";
+
 export enum ActionType {
   START = 'START',
   REFRESH = 'REFRESH',
   OUT = 'OUT',
   UPDATE = 'UPDATE',
 }
+
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   private baseURL = "http://localhost:8080/api/v1/users";
   private baseURL1 = "http://localhost:8080/api/v1/admin";
-  syslog : any = {};
+  syslog: any = {};
+
   constructor(private http: HttpClient,
               private router: Router,
               private cookieService: CookieService,
@@ -30,6 +33,10 @@ export class UserService {
     return this.http.get(`${this.baseURL}/get-curriculum`);
   }
 
+  findUnsubmitted(): Observable<any> {
+    return this.http.get(`${this.baseURL}/assignments-unsub`);
+  }
+
   viewAllClasses(): Observable<any> {
     return this.http.get<any>(`${this.baseURL}/get-all-classes`);
   }
@@ -37,9 +44,11 @@ export class UserService {
   getAllEnrollments(): Observable<any> {
     return this.http.get<any>(`${this.baseURL1}/get-all-enrollments`);
   }
+
   getAllTeachers(): Observable<any> {
     return this.http.get<any>(`${this.baseURL1}/get-list-teacher`);
   }
+
   getUserByID(id: any): Observable<any> {
     const params = new HttpParams().set('id', id);
     return this.http.get<any>(`${this.baseURL1}/get-user-by-id`, {params});
@@ -47,7 +56,7 @@ export class UserService {
 
   getFilterEnrollments(type: string): Observable<any> {
     const params = new HttpParams().set('type', type);
-    return this.http.get<any>(`${this.baseURL}/get-filter-enrollments`, { params });
+    return this.http.get<any>(`${this.baseURL}/get-filter-enrollments`, {params});
   }
 
   registerEnrollment(enrollmentDTOS: any[]) {
@@ -58,11 +67,12 @@ export class UserService {
     return this.http.post<any>(`${this.baseURL1}/upload-enrollment`, enrollmentDTO);
   }
 
-  getListUser(className: any): Observable<any>{
+  getListUser(className: any): Observable<any> {
     const params = new HttpParams().set('className', className);
-    return this.http.get<any>(`${this.baseURL1}/get-list-users`, { params });
+    return this.http.get<any>(`${this.baseURL1}/get-list-users`, {params});
   }
-  uploadCourse(courseDTO: any){
+
+  uploadCourse(courseDTO: any) {
     return this.http.post<any>(`${this.baseURL1}/upload-course`, courseDTO)
   }
 
@@ -74,30 +84,33 @@ export class UserService {
     const params = new HttpParams().set('id', id);
     return this.http.get<any>(`${this.baseURL}/get-info-teacher-by-id`, {params});
   }
+
   getListUserFromEnrollment(id: any) {
     const params = new HttpParams().set('id', id);
     return this.http.get<any>(`${this.baseURL}/get-list-student-from-enrollment`, {params});
   }
+
   getPdfFilesByEnrollID(id: any) {
     const params = new HttpParams().set('id', id);
     return this.http.get<any>(`${this.baseURL}/get-pdfs-by-enrollId`, {params});
   }
-  uploadPDF(enrollmentDTO:any) {
+
+  uploadPDF(enrollmentDTO: any) {
     return this.http.post<any>(`${this.baseURL1}/upload-pdf`, enrollmentDTO)
   }
 
-  saveSysLog(syslog: any){
+  saveSysLog(syslog: any) {
     return this.http.post(`${this.baseURL}/save-sys-log`, syslog)
   }
 
-  setSysLog(action: any,description: any, status: any){
+  setSysLog(action: any, description: any, status: any) {
     this.syslog.action = action;
     this.syslog.description = description;
     this.syslog.status = status;
     return this.syslog;
   }
 
-  getSysLog(){
+  getSysLog() {
     return this.http.get(`${this.baseURL}/syslogs-user`)
   }
 
@@ -120,22 +133,24 @@ export class UserService {
 
   getSignedUrl(pdfId: any, url: any): Observable<string> {
     return this.http.get(`${this.baseURL}/view/${pdfId}`, {
-      params: { url },
+      params: {url},
       responseType: 'text'
     });
   }
+
   uploadAssignment(createAssignmentDTO: any) {
     return this.http.post<any>(`${this.baseURL1}/upload-assignment`, createAssignmentDTO)
   }
 
   getAssignmentById(id: any, type: any): Observable<any> {
     const params = new HttpParams().set('type', type);
-    return this.http.get(`${this.baseURL1}/get-assignment-by-${id}`, { params });
+    return this.http.get(`${this.baseURL1}/get-assignment-by-${id}`, {params});
   }
 
   getDetailAssignmentById(id: any): Observable<any> {
     return this.http.get(`${this.baseURL1}/get-detail-assignment-by-${id}`);
   }
+
   start(assignmentId: number, answers: any[], actionType: ActionType = ActionType.START): Observable<any> {
     const params = new HttpParams()
       .set('assignmentId', assignmentId.toString())
@@ -144,19 +159,21 @@ export class UserService {
     // Chỉ gửi body khi UPDATE để server cập nhật answersJsons
     const body = actionType === 'UPDATE' ? (answers ?? []) : null;
 
-    return this.http.post(`${this.baseURL1}/start`, body, { params });
+    return this.http.post(`${this.baseURL1}/start`, body, {params});
   }
 
   submitAssignment(assignmentId: number, answers: any[]): Observable<any> {
     const params = new HttpParams().set('assignmentId', assignmentId);
-    return this.http.post<any>(`${this.baseURL}/submit-assignment`, answers, { params });
+    return this.http.post<any>(`${this.baseURL}/submit-assignment`, answers, {params});
   }
+
   createViolation(req: any): Observable<number> {
     return this.http.post<any>(`${this.baseURL}/create-violation`, req);
   }
+
   getHistory(assignmentId: any): Observable<any> {
     const params = new HttpParams().set('assignmentId', assignmentId.toString());
-    return this.http.get<any>(`${this.baseURL1}/submission-history`, { params });
+    return this.http.get<any>(`${this.baseURL1}/submission-history`, {params});
   }
 
   getSubmissionList(assignmentId: number, status: string = ''): Observable<any[]> {
@@ -164,6 +181,14 @@ export class UserService {
       .set('assignmentId', assignmentId.toString())
       .set('status', status);
 
-    return this.http.get<any[]>(`${this.baseURL1}/submission-list`, { params });
+    return this.http.get<any[]>(`${this.baseURL1}/submission-list`, {params});
+  }
+
+  decreaseScore(id: number, score: number, email: string): Observable<any> {
+    let params = new HttpParams()
+      .set('id', String(id))
+      .set('score', String(score))
+      .set('email', email);
+    return this.http.post<any>(`${this.baseURL1}/decrease-score`, {params});
   }
 }

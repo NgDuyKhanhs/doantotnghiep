@@ -3,10 +3,7 @@ package lms.doantotnghiep.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lms.doantotnghiep.domain.Course;
-import lms.doantotnghiep.domain.SysLog;
-import lms.doantotnghiep.domain.User;
-import lms.doantotnghiep.domain.ViolationReport;
+import lms.doantotnghiep.domain.*;
 import lms.doantotnghiep.dto.*;
 import lms.doantotnghiep.dto.request.AnswersJson;
 import lms.doantotnghiep.dto.request.CreateViolationRequest;
@@ -78,9 +75,9 @@ public class UserController {
 
 
     @PostMapping("/register-enrollment")
-    public ResponseEntity<?> registerEnrollment(@Valid @RequestBody List<Integer> enrollIds) {
+    public ResponseEntity<?> registerEnrollment(@Valid @RequestBody List<Integer> enrollIds,HttpServletRequest request) {
         try {
-            enrollmentService.registerEnrollment(enrollIds);
+            enrollmentService.registerEnrollment(enrollIds,request);
             return ResponseEntity.ok().body(Map.of(
                     "success", true,
                     "message", "Đăng ký thành công"
@@ -188,11 +185,11 @@ public class UserController {
     }
 
     @PostMapping("/submit-assignment")
-    public ResponseEntity<?> submitAssignment(@RequestParam int assignmentId, @RequestBody List<AnswersJson> answersJsons, Authentication authentication) {
+    public ResponseEntity<?> submitAssignment(@RequestParam int assignmentId, @RequestBody List<AnswersJson> answersJsons, Authentication authentication, HttpServletRequest request) {
         UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
         SubmitResult result = new SubmitResult();
         if (userDetailsImple != null) {
-            result = assignmentService.submitExam(userDetailsImple.getId(),assignmentId, answersJsons);
+            result = assignmentService.submitExam(userDetailsImple.getId(),assignmentId, answersJsons,request);
         } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -229,7 +226,24 @@ public class UserController {
         );
         return ResponseEntity.ok(saved.getId());
     }
+    @GetMapping("/assignments-unsub")
+    public ResponseEntity<?> findUnsubmitted(Authentication authentication) {
+        UserDetailsImple userDetailsImple = userService.getPrincipal(authentication);
+        if (userDetailsImple != null) {
+            try {
+                List<AssignmentDTO> result = assignmentService.findUnsubmitted(userDetailsImple.getId());
+                if (result != null) {
+                    return ResponseEntity.ok(result);
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Lỗi: " + e.getMessage());
+            }
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
+    }
     private String safe(String s) {
         return s == null ? "" : s.trim();
     }

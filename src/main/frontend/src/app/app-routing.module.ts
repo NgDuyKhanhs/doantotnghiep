@@ -28,8 +28,8 @@ import {ListTeacherComponent} from "./list-teacher/list-teacher.component";
 
 const routes: Routes = [
   {path: 'trang-chu', component: HomeComponent, data: {animation: 'LoginComponent'}, canActivate: [AuthGuard]},
-  {path: 'dang-nhap', component: LoginComponent, data: {animation: 'LoginComponent'}},
-  {path: 'dang-ky', component: RegisterComponent, data: {animation: 'RegisterComponent'}},
+  {path: 'dang-nhap', component: LoginComponent, data: {animation: 'LoginComponent',showNavbar: false }},
+  {path: 'dang-ky', component: RegisterComponent, data: {animation: 'RegisterComponent',showNavbar: false }},
   {path: 'thoi-khoa-bieu', component: ChatBoxComponent, data: {animation: 'ChatBoxComponent'}, canActivate: [AuthGuard]},
   {path: '', redirectTo: 'dang-nhap', pathMatch: 'full', data: {animation: 'ChatBoxComponent'}},
   {path: 'active/:token', component: ActiveAccountComponent, data: {animation: 'LoginComponent'}},
@@ -73,7 +73,7 @@ const routes: Routes = [
   },
   {path:'danh-sach-sinh-vien', component: ListUserComponent, canActivate: [AuthGuard]},
   {path:'danh-sach-giang-vien', component: ListTeacherComponent, canActivate: [AuthGuard]},
-  {path: 'bai-tap/:id/lam-bai/:idEnroll', component: DoAssignmentsComponent, canActivate: [AuthGuard]},
+  {path: 'bai-tap/:id/lam-bai/:idEnroll', component: DoAssignmentsComponent, canActivate: [AuthGuard],data: { showNavbar: false }},
   {path: 'danh-sach-nop-bai/:id', component: ListViolationComponent, data: {animation: 'LoginComponent'}, canActivate: [AuthGuard]},
 
 ];

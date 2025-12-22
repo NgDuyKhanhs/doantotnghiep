@@ -1,5 +1,6 @@
 package lms.doantotnghiep.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lms.doantotnghiep.domain.*;
 import lms.doantotnghiep.dto.AssignmentDTO;
@@ -50,9 +51,11 @@ public class AssignmentServiceImpl implements AssignmentService {
     private CourseRepository courseRepository;
     @Autowired
     private ViolationRepository violationRepository;
+    @Autowired
+    private SysLogRepository sysLogRepository;
     @Override
     @Transactional
-    public AssignmentDTO createAssignment(CreateAssignmentDTO assignmentDTO) {
+    public AssignmentDTO createAssignment(int id,CreateAssignmentDTO assignmentDTO, HttpServletRequest request) {
         Assignment assignment = new Assignment();
         assignment.setDescription(assignmentDTO.getDescription());
         assignment.setTitle(assignmentDTO.getTitle());
@@ -61,7 +64,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setDuration(assignmentDTO.getDuration());
         enrollmentRepository.findById(assignmentDTO.getEnrollId())
                 .ifPresent(assignment::setEnrollment);
-
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
         List<Question> questions = assignmentDTO.getQuestions().stream().map(qdto -> {
             Question q = new Question();
             q.setText(qdto.getText());
@@ -84,7 +89,14 @@ public class AssignmentServiceImpl implements AssignmentService {
             q.setChoices(choices);
             return q;
         }).collect(Collectors.toList());
-
+        SysLog sysLog = new SysLog();
+        User user = userRepository.findById(id).get();
+        sysLog.setUser(user);
+        sysLog.setAction("Tạo bài tập");
+        sysLog.setNameDevice(deviceName);
+        sysLog.setStartTime(LocalDateTime.now());
+        sysLog.setIpAddress(currentIp);
+        sysLog.setStatus(0);
         assignment.setQuestions(questions);
         Assignment saved = assignmentRepository.save(assignment);
         return toDto(saved);
@@ -136,9 +148,22 @@ public class AssignmentServiceImpl implements AssignmentService {
        Assignment assignment = assignmentRepository.findById(id);
        return toDto(assignment);
     }
-
+    public String detectDeviceName(String userAgent) {
+        if (userAgent.contains("iPad")) {
+            return "iPad - Safari Mobile (iOS)";
+        } else if (userAgent.contains("iPhone")) {
+            return "iPhone - Safari Mobile (iOS)";
+        } else if (userAgent.contains("Android")) {
+            return "Android - Chrome";
+        } else if (userAgent.contains("Windows")) {
+            return "Windows - Chrome/Edge";
+        } else if (userAgent.contains("Mac OS X")) {
+            return "MacOS - Safari/Chrome";
+        }
+        return "Unknown Device";
+    }
     @Override
-    public ExamSession startExam(int userId, int assignmentId, List<AnswersJson> answersJsons, ActionType actionType) {
+    public ExamSession startExam(int userId, int assignmentId, List<AnswersJson> answersJsons, ActionType actionType, HttpServletRequest request) {
         // Chặn khi đang có phiên active của bài khác
         ExamSession active = examSessionService.findActiveSessionByUser(userId);
         if (active != null && active.getAssignmentId() != assignmentId) {
@@ -149,22 +174,17 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (existing != null) {
             switch (actionType) {
                 case UPDATE:
-                    // Cập nhật câu trả lời khi client gửi lên
                     if (answersJsons != null) {
                         existing.setAnswersJson(answersJsons);
-                        // Lưu lại nhưng không reset thời gian, dùng đúng remainingSeconds còn lại
                         examSessionService.saveExamSession(existing, existing.getRemainingSeconds(), false);
                     }
-                    // Nếu answersJsons null, coi như không thay đổi
                     return existing;
 
                 case START:
-                    // Không set answerJsons, trả về phiên hiện tại như đang có
                     return existing;
 
                 case REFRESH:
                 case OUT:
-                    // Giữ nguyên answerJsons đang có trong Redis, không ghi đè
                     return existing;
 
                 default:
@@ -184,14 +204,23 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
 
         long durationSeconds = Long.parseLong(assignment.getDuration()) * 60L;
-
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
         ExamSession session = new ExamSession();
         session.setUserId(userId);
         session.setAssignmentId(assignmentId);
         session.setSubmissionId(submissionId);
         session.setStartTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         session.setRemainingSeconds(durationSeconds);
-
+        SysLog sysLog = new SysLog();
+        User user = userRepository.findById(userId).orElse(null);
+        sysLog.setUser(user);
+        sysLog.setAction("Bắt đầu làm bài");
+        sysLog.setNameDevice(deviceName);
+        sysLog.setStartTime(LocalDateTime.now());
+        sysLog.setIpAddress(currentIp);
+        sysLogRepository.save(sysLog);
         // START: không set answerJsons từ request, khởi tạo rỗng
         session.setAnswersJson(new ArrayList<>());
 
@@ -203,12 +232,14 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
 
-    public SubmitResult submitExam(int userId, int assignmentId, List<AnswersJson> answersFromClient) {
+    public SubmitResult submitExam(int userId, int assignmentId, List<AnswersJson> answersFromClient,HttpServletRequest request) {
         Assignment assignment = assignmentRepository.findById(assignmentId);
         if (assignment == null) {
             throw new IllegalArgumentException("Bài tập không tồn tại.");
         }
-
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
         // 1) Lấy session từ Redis
         ExamSession session = examSessionService.getExamSession(userId, assignmentId);
 
@@ -336,7 +367,15 @@ public class AssignmentServiceImpl implements AssignmentService {
         submission.setEndTime(submittedAt);
         submission.setScore(score);
         submissionRepository.save(submission);
-
+        SysLog sysLog = new SysLog();
+        User user = userRepository.findById(userId).orElse(null);
+        sysLog.setUser(user);
+        sysLog.setAction("Nộp bài");
+        sysLog.setNameDevice(deviceName);
+        sysLog.setStartTime(LocalDateTime.now());
+        sysLog.setIpAddress(currentIp);
+        sysLog.setStatus(0);
+        sysLogRepository.save(sysLog);
         // 7) Xóa session Redis
         try {
             examSessionService.deleteExamSession(userId, assignmentId);
@@ -371,6 +410,15 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public Integer countSubmitted(int userId, int assignmentId) {
         return null;
+    }
+
+    @Override
+    public List<AssignmentDTO> findUnsubmitted(int userId) {
+        List<Assignment> assignments = new ArrayList<>();
+        assignments = assignmentRepository.findUnsubmitted(userId);
+        return assignments.stream()
+                .map(this::toDto)
+                .toList();
     }
 
     private List<AnswersJson> mergeAnswers(List<AnswersJson> fromSession, List<AnswersJson> fromClient) {

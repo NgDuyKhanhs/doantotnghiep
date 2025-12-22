@@ -3,7 +3,9 @@ package lms.doantotnghiep.service.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import jakarta.servlet.http.HttpServletRequest;
 import lms.doantotnghiep.domain.Enrollment;
+import lms.doantotnghiep.domain.SysLog;
 import lms.doantotnghiep.domain.User;
 import lms.doantotnghiep.dto.CourseDTO;
 import lms.doantotnghiep.dto.EnrollmentDTO;
@@ -14,6 +16,7 @@ import lms.doantotnghiep.enums.AppException;
 import lms.doantotnghiep.enums.ErrorConstant;
 import lms.doantotnghiep.repository.CourseRepository;
 import lms.doantotnghiep.repository.EnrollmentRepository;
+import lms.doantotnghiep.repository.SysLogRepository;
 import lms.doantotnghiep.repository.UserRepository;
 import lms.doantotnghiep.security.PDFSecurityScanner;
 import lms.doantotnghiep.security.PlainPdfScanner;
@@ -56,6 +59,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private PDFSecurityScanner pdfSecurityScanner;
     @Autowired
     private PlainPdfScanner plainPdfScanner;
+    @Autowired
+    private SysLogRepository sysLogRepository;
     @Override
     public List<EnrollmentDTO> getAllEnrollments(Integer classId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -67,12 +72,27 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         });
         return enrollmentDTOList;
     }
-
+    public String detectDeviceName(String userAgent) {
+        if (userAgent.contains("iPad")) {
+            return "iPad - Safari Mobile (iOS)";
+        } else if (userAgent.contains("iPhone")) {
+            return "iPhone - Safari Mobile (iOS)";
+        } else if (userAgent.contains("Android")) {
+            return "Android - Chrome";
+        } else if (userAgent.contains("Windows")) {
+            return "Windows - Chrome/Edge";
+        } else if (userAgent.contains("Mac OS X")) {
+            return "MacOS - Safari/Chrome";
+        }
+        return "Unknown Device";
+    }
     @Override
-    public void registerEnrollment(List<Integer> enrollIds) {
+    public void registerEnrollment(List<Integer> enrollIds, HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImple userDetails = (UserDetailsImple) authentication.getPrincipal();
-
+        String currentIp = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String deviceName = detectDeviceName(userAgent);
         Optional<User> userOptional = userRepository.findByEmail(userDetails.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -93,6 +113,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     }
                 }
             }
+            SysLog sysLog = new SysLog();
+            sysLog.setUser(user);
+            sysLog.setAction("Đăng ký học");
+            sysLog.setNameDevice(deviceName);
+            sysLog.setStartTime(LocalDateTime.now());
+            sysLog.setIpAddress(currentIp);
+            sysLog.setStatus(0);
+            sysLogRepository.save(sysLog);
             userRepository.save(user);
         } else {
             throw new AppException(ErrorConstant.UNAUTHENTICATED);
@@ -193,13 +221,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
                 ScanResult scan = plainPdfScanner.scan(pdfBytes);
                 if (scan.isDangerous()) {
-                    throw new AppException(ErrorConstant.FILE_ERROR); // hoặc tạo ErrorConstant.PDF_DANGEROUS
+                    throw new AppException(ErrorConstant.PDF_DANGEROUS); // hoặc tạo ErrorConstant.PDF_DANGEROUS
                 }
 
                 ByteArrayInputStream pdfInput = new ByteArrayInputStream(pdfBytes);
                 File watermarkedFile = pdfWatermarkService.addWatermark(pdfInput, userId);
 
                 byte[] watermarkedBytes = Files.readAllBytes(watermarkedFile.toPath());
+
                 ScanResult postScan = plainPdfScanner.scan(watermarkedBytes);
                 if (postScan.isDangerous()) {
                     watermarkedFile.delete();

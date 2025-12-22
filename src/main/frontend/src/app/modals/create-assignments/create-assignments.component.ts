@@ -32,17 +32,27 @@ export class CreateAssignmentsComponent implements OnInit {
 
   autoFillSampleData(): void {
     const sampleData = {
-      title: "Bài tập 1",
-      description: "60p",
+      title: "Bài tập giữa kỳ",
+      description: "Sinh viên không được sử dụng tài liệu",
       questions: [
         {
-          text: "Ai là người đẹp trai nhất",
+          text: "class Animal{\n" +
+            "\n" +
+            " String name;\n" +
+            "\n" +
+            " public Animal(String x){\n" +
+            "\n" +
+            " this.name = x;\n" +
+            "\n" +
+            " }\n" +
+            "\n" +
+            "}",
           correctChoiceId: 1,
           choices: [
-            { text: "An" },
-            { text: "Khánh" },
-            { text: "Dương" },
-            { text: "Mi" }
+            { text: "Animal a = new Animal(); " },
+            { text: "Animal a = new Animal(\"name\"); " },
+            { text: "Animal a = new Animal(\"\"); " },
+            { text: "new Animal(\"name\"); " }
           ]
         }
       ]

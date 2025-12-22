@@ -58,7 +58,6 @@ export class ContentComponent implements OnInit {
           blob: this.pdfReview[this.pdfReview.length - 1].changingThisBreaksApplicationSecurity
         });
       }
-      console.log(this.collectPDF)
     }
   }
   private convertToBase64(file: File): Promise<string> {
@@ -103,7 +102,12 @@ export class ContentComponent implements OnInit {
         this.getPdfFilesByEnrollID();
         this.spinner.hide();
       },500)
-
+    },error => {
+      setTimeout(() => {
+        this.collectPDF = [];
+        this.notify.showFail('File lỗi');
+        this.spinner.hide();
+      },500)
     })
   }
 

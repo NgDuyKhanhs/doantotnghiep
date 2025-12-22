@@ -37,7 +37,7 @@ export class ActionComponent implements OnInit{
   }
 
   getSysLog() {
-     if (this.currentRole == 'ROLE_USER' || this.currentRole == 'ROLE_TEACHER') {
+
       this.userService.getSysLog().subscribe(res => {
         this.syslogs = res;
         this.dataShow = this.syslogs
@@ -45,7 +45,7 @@ export class ActionComponent implements OnInit{
         this.pageable()
         // @ts-ignore
       })
-    }
+
 
   }
 
